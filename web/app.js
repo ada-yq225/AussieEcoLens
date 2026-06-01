@@ -225,9 +225,7 @@ function renderResults(items) {
     const title = document.createElement("strong");
     title.textContent = item.filename || item.file || "Result";
     card.appendChild(title);
-    const tags = document.createElement("code");
-    tags.textContent = JSON.stringify(item.error ? { error: item.error } : item.tags || item, null, 2);
-    card.appendChild(tags);
+    card.appendChild(item.error ? errorBlock(item.error) : tagsBlock(item.tags || item));
     if (item.thumbnail_url) {
       card.appendChild(urlBlock("Thumbnail URL", item.thumbnail_url));
     }
@@ -238,6 +236,33 @@ function renderResults(items) {
   }
 }
 
+function errorBlock(message) {
+  const block = document.createElement("div");
+  block.className = "error-message";
+  block.textContent = message;
+  return block;
+}
+
+function tagsBlock(tags) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "tag-list";
+  const entries = Object.entries(tags || {}).filter(([, value]) => typeof value === "number" || typeof value === "string");
+  if (!entries.length) {
+    const empty = document.createElement("span");
+    empty.className = "tag-chip muted-chip";
+    empty.textContent = "No tags";
+    wrapper.appendChild(empty);
+    return wrapper;
+  }
+  for (const [tag, count] of entries) {
+    const chip = document.createElement("span");
+    chip.className = "tag-chip";
+    chip.innerHTML = `<span>${tag}</span><strong>${count}</strong>`;
+    wrapper.appendChild(chip);
+  }
+  return wrapper;
+}
+
 function urlBlock(label, value) {
   const wrapper = document.createElement("div");
   wrapper.className = "url-block";
@@ -245,6 +270,12 @@ function urlBlock(label, value) {
   head.className = "url-head";
   const title = document.createElement("span");
   title.textContent = label;
+  const actions = document.createElement("div");
+  actions.className = "url-actions";
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "copy";
+  toggle.textContent = "Show";
   const copy = document.createElement("button");
   copy.type = "button";
   copy.className = "copy";
@@ -253,9 +284,15 @@ function urlBlock(label, value) {
     await navigator.clipboard.writeText(value);
     setStatus(`${label} copied`);
   });
-  head.append(title, copy);
+  actions.append(toggle, copy);
+  head.append(title, actions);
   const code = document.createElement("code");
+  code.className = "collapsed";
   code.textContent = value;
+  toggle.addEventListener("click", () => {
+    const collapsed = code.classList.toggle("collapsed");
+    toggle.textContent = collapsed ? "Show" : "Hide";
+  });
   wrapper.append(head, code);
   return wrapper;
 }

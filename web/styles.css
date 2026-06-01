@@ -258,6 +258,54 @@ button.danger {
   line-height: 1.45;
 }
 
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 7px 9px;
+  border: 1px solid #cfe0ce;
+  border-radius: 999px;
+  background: #eef7ef;
+  color: #163824;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tag-chip span {
+  overflow-wrap: anywhere;
+}
+
+.tag-chip strong {
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #247348;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+
+.muted-chip {
+  background: #f1f4f0;
+  color: #6c7b70;
+}
+
+.error-message {
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #fff0f0;
+  color: #8f2929;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .url-block {
   display: grid;
   gap: 6px;
@@ -276,6 +324,12 @@ button.danger {
   text-transform: uppercase;
 }
 
+.url-actions {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
 button.copy {
   padding: 5px 8px;
   border-radius: 6px;
@@ -286,6 +340,10 @@ button.copy {
 
 button.copy:hover {
   background: #d7e8d8;
+}
+
+.url-block code.collapsed {
+  display: none;
 }
 
 #status {
