@@ -34,6 +34,13 @@
 - [x] AWS SNS email notifications configured.
 - [ ] SNS email subscription confirmation pending in recipient inbox.
 
+## Multi-Cloud
+
+- [x] GCP Cloud Function deployed as second-cloud mirror endpoint.
+- [x] GCP Cloud Storage mirror bucket created.
+- [x] AWS Lambda configured to call GCP function after upload.
+- [x] AWS-to-GCP metadata mirror verified with `Felis_catus_2.JPG`.
+
 ## UI
 
 - [x] Local sign-up, sign-in, sign-out UI.
@@ -46,7 +53,7 @@
 
 - [ ] Official multi-cloud architecture diagram.
 - [ ] Team contribution table.
-- [ ] User guide.
-- [ ] Private Git repository link with commits from all members.
+- [x] User guide and demo walkthrough.
+- [x] Private Git repository link available through pushed GitHub repo.
 - [ ] Individual report.
-- [ ] Demo script and Q&A notes.
+- [x] Demo script and Q&A notes.

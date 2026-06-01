@@ -43,6 +43,12 @@ gcloud auth application-default login
 gcloud config set project YOUR_PROJECT_ID
 ```
 
+Current deployed GCP project:
+
+```text
+aussie-ecolens-raywu361
+```
+
 ## Deployment Order
 
 Deploy GCP first so AWS can call the GCP mirror endpoint.
@@ -50,12 +56,18 @@ Deploy GCP first so AWS can call the GCP mirror endpoint.
 ```bash
 export GCP_PROJECT_ID=YOUR_PROJECT_ID
 export GCP_REGION=australia-southeast1
-export GCP_BUCKET=YOUR_UNIQUE_BUCKET_NAME
+export GCP_BUCKET=aussie-ecolens-raywu361-mirror
 export GCP_SHARED_SECRET=choose-a-long-random-secret
 scripts/deploy_gcp.sh
 ```
 
 The script prints the GCP function URL. Use that as `GCP_MIRROR_ENDPOINT` for AWS.
+
+Current deployed GCP endpoint:
+
+```text
+https://aussie-ecolens-mirror-hzmou43rsa-ts.a.run.app
+```
 
 ```bash
 export STACK_NAME=aussie-ecolens

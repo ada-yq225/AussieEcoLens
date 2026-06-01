@@ -344,7 +344,7 @@ def mirror_to_gcp(media_item: Dict[str, Any]) -> None:
             if media_item.get("thumbnail_key")
             else None,
             "tags": media_item.get("tags", {}),
-            "created_at": media_item.get("created_at"),
+            "created_at": float(media_item.get("created_at", 0)),
         }
     ).encode("utf-8")
     request = urllib.request.Request(
