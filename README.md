@@ -6,7 +6,7 @@ The project is built in stages:
 
 1. Local demo with the same API shape as the cloud system.
 2. Automated workflow tests for upload, deduplication, tagging, querying, editing, deletion, and notifications.
-3. Cloud deployment plan for AWS plus a second cloud provider.
+3. Cloud deployment on AWS plus GCP.
 
 ## Local Demo
 
@@ -69,12 +69,18 @@ Create a user through the UI, or call:
 POST /api/auth/signup
 ```
 
-## Cloud Accounts Needed Later
+## Cloud Deployment
 
-The real cloud phase will require manual login or credentials for:
+The final cloud version uses:
 
-- AWS Academy or AWS account with access to Cognito, IAM, S3, Lambda, API Gateway, DynamoDB, and SNS.
-- A second cloud provider account, recommended GCP, with access to Cloud Storage and Cloud Functions or Cloud Run.
-- Email confirmation access for Cognito and SNS notification testing.
+- AWS Cognito, API Gateway, Lambda, S3, DynamoDB, SNS, and an ffmpeg Lambda layer.
+- GCP Cloud Run for the supplied course ML model (`model.pt` + `mdv5a.pt`).
+- GCP Cloud Storage for mirrored AWS upload metadata.
 
-No real cloud resources are created by the local demo.
+In cloud mode, image uploads and video frames are tagged by the deployed course ML model. Video uploads are sampled at roughly one frame per second before model inference.
+
+Step-by-step final testing instructions are in:
+
+```text
+README_TESTING.md
+```

@@ -21,10 +21,18 @@ Parameters:
     AllowedValues:
       - filename
       - rekognition
+      - course_model
   GcpMirrorEndpoint:
     Type: String
     Default: ''
   GcpSharedSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+  ModelInferenceEndpoint:
+    Type: String
+    Default: ''
+  ModelSharedSecret:
     Type: String
     Default: ''
     NoEcho: true
@@ -52,6 +60,9 @@ Globals:
         TAGGER_MODE: !Ref TaggerMode
         GCP_MIRROR_ENDPOINT: !Ref GcpMirrorEndpoint
         GCP_SHARED_SECRET: !Ref GcpSharedSecret
+        MODEL_INFERENCE_ENDPOINT: !Ref ModelInferenceEndpoint
+        MODEL_SHARED_SECRET: !Ref ModelSharedSecret
+        MODEL_TIMEOUT_SECONDS: 50
         FFMPEG_PATH: /opt/bin/ffmpeg
 
 Resources:

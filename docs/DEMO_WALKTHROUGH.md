@@ -17,6 +17,7 @@ This document is the working demo guide for the final assignment demonstration.
 - DynamoDB table: `aussie-ecolens-metadata`
 - SNS topic: `arn:aws:sns:ap-southeast-2:828876761072:aussie-ecolens-tag-notifications`
 - ffmpeg Lambda layer: `arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1`
+- Tagger mode: `course_model`
 
 ### GCP
 
@@ -25,6 +26,9 @@ This document is the working demo guide for the final assignment demonstration.
 - Cloud Function: `aussie-ecolens-mirror`
 - Function URL: `https://aussie-ecolens-mirror-hzmou43rsa-ts.a.run.app`
 - Mirror bucket: `gs://aussie-ecolens-raywu361-mirror`
+- Cloud Run model service: `aussie-ecolens-model`
+- Model service URL: `https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app`
+- Model bucket: `gs://aussie-ecolens-raywu361-models`
 
 ## Local UI
 
@@ -164,11 +168,13 @@ Verified AWS video upload:
 {
   "media_type": "video",
   "tags": {
-    "casuarius_casuarius": 1
+    "casuarius_casuarius": 3
   },
   "frame_url_count": 3
 }
 ```
+
+The video filename used for verification did not contain the species name. AWS extracted frames with ffmpeg, sent the frames to the GCP course model service, and stored the model-derived tag count in DynamoDB.
 
 Frame objects were stored under:
 

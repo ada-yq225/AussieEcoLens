@@ -31,6 +31,9 @@ SNS_TOPIC_ARN = os.environ["SNS_TOPIC_ARN"]
 TAGGER_MODE = os.environ.get("TAGGER_MODE", "filename")
 GCP_MIRROR_ENDPOINT = os.environ.get("GCP_MIRROR_ENDPOINT", "")
 GCP_SHARED_SECRET = os.environ.get("GCP_SHARED_SECRET", "")
+MODEL_INFERENCE_ENDPOINT = os.environ.get("MODEL_INFERENCE_ENDPOINT", "")
+MODEL_SHARED_SECRET = os.environ.get("MODEL_SHARED_SECRET", "")
+MODEL_TIMEOUT_SECONDS = int(os.environ.get("MODEL_TIMEOUT_SECONDS", "50"))
 FFMPEG_PATH = os.environ.get("FFMPEG_PATH", "/opt/bin/ffmpeg")
 SPECIES = {
     "koala",
@@ -185,6 +188,35 @@ def rekognition_tags(data: bytes) -> Dict[str, int]:
     return tags
 
 
+def model_service_tags(images: list[Tuple[str, bytes]]) -> Dict[str, int]:
+    if not MODEL_INFERENCE_ENDPOINT or not images:
+        return {}
+    payload = json.dumps(
+        {
+            "images": [
+                {
+                    "filename": safe_filename(os.path.basename(filename)),
+                    "content_base64": base64.b64encode(data).decode("ascii"),
+                }
+                for filename, data in images
+            ]
+        }
+    ).encode("utf-8")
+    endpoint = MODEL_INFERENCE_ENDPOINT.rstrip("/") + "/predict"
+    request = urllib.request.Request(
+        endpoint,
+        data=payload,
+        method="POST",
+        headers={
+            "content-type": "application/json",
+            "x-aussie-ecolens-secret": MODEL_SHARED_SECRET,
+        },
+    )
+    with urllib.request.urlopen(request, timeout=MODEL_TIMEOUT_SECONDS) as result:
+        response_payload = json.loads(result.read().decode("utf-8"))
+    return {str(k): int(v) for k, v in response_payload.get("tags", {}).items()}
+
+
 def extract_video_frames(data: bytes, checksum: str) -> list[Tuple[str, bytes]]:
     if not os.path.exists(FFMPEG_PATH):
         return []
@@ -230,6 +262,14 @@ def video_frame_tags(frames: list[Tuple[str, bytes]]) -> Dict[str, int]:
 
 
 def detect_tags(filename: str, data: bytes, media_type: str, frames: Optional[list[Tuple[str, bytes]]] = None) -> Dict[str, int]:
+    if TAGGER_MODE == "course_model":
+        try:
+            model_inputs = [(filename, data)] if media_type == "image" else frames or []
+            tags = model_service_tags(model_inputs)
+            if tags:
+                return tags
+        except Exception as exc:
+            print(f"course model inference failed for {filename}: {exc}")
     if media_type == "image" and TAGGER_MODE == "rekognition":
         tags = rekognition_tags(data)
         if tags:

@@ -45,6 +45,7 @@ Expected result:
 - When complete, the status shows `Uploaded N files`.
 - The `Results` section shows one card per file.
 - Large image files are automatically compressed in the browser before cloud upload.
+- In the deployed cloud version, tags come from the supplied course ML model running on GCP Cloud Run, not from filenames.
 - Each successful card should include:
   - filename
   - detected tags
@@ -185,6 +186,7 @@ Expected result:
 - The card shows `Extracted frames`.
 - Extracted frame previews are displayed with copy buttons.
 - The frame count should match roughly one extracted frame per second for the demo video duration. A 3-second video returns about 3 frame URLs; a 10-second video returns about 10.
+- Each extracted frame is sent to the same GCP course ML model. A 3-second video with the same detected animal in all frames can therefore return a tag count such as `casuarius_casuarius x3`.
 
 Supported video extensions include `.mp4`, `.mov`, `.avi`, `.mkv`, `.webm`, `.m4v`, `.mpg`, `.mpeg`, `.3gp`, `.3g2`, `.wmv`, `.flv`, `.ts`, `.m2ts`, and `.ogv`, subject to ffmpeg codec support.
 
@@ -227,11 +229,12 @@ The full project is working when:
 
 - Cognito login succeeds.
 - Batch upload shows one result card per file.
+- Image uploads are tagged by the deployed course ML model.
 - Duplicate upload is detected.
 - Tag and species queries return matching media.
 - Thumbnail lookup returns the full image URL.
 - Query-by-file finds matching media without storing the query file.
 - Manual tag add/remove works.
 - Delete removes media from query results.
-- Video upload returns extracted frame URLs.
+- Video upload returns extracted frame URLs and model-derived frame tags.
 - GCP mirror bucket contains metadata JSON created from AWS uploads.

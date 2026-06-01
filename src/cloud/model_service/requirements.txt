@@ -1,0 +1,8 @@
+flask
+gunicorn
+google-cloud-storage
+Pillow
+megadetector==10.0.21
+torch
+torchvision
+tqdm
