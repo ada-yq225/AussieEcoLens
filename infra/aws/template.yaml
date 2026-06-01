@@ -246,6 +246,14 @@ Resources:
                 - rekognition:DetectLabels
               Resource: '*'
       Events:
+        OptionsProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /{proxy+}
+            Method: OPTIONS
+            Auth:
+              Authorizer: NONE
         Proxy:
           Type: HttpApi
           Properties:

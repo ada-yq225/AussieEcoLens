@@ -51,19 +51,24 @@ async function api(path, options = {}) {
   try {
     response = await fetch(`${config.apiBaseUrl || ""}${path}`, { ...options, headers });
   } catch (error) {
-    if (isCloud) {
-      clearSession();
-      showApp();
-      throw new Error("Cloud session expired or blocked. Please sign in again.");
-    }
+    if (isCloud) throw new Error(`Cloud request failed: ${error.message}`);
     throw error;
   }
-  const data = await response.json();
+  const text = await response.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (_error) {
+    data = { error: text };
+  }
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) {
-      clearSession();
-      showApp();
-      throw new Error("Session expired. Please sign in again.");
+      if (isCloud && tokenExpired(state.idToken)) {
+        clearSession();
+        showApp();
+        throw new Error("Session expired. Please sign in again.");
+      }
+      throw new Error(data.message || data.error || `Cloud API rejected the request (${response.status}).`);
     }
     throw new Error(data.error || "Request failed");
   }
