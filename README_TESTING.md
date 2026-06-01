@@ -49,7 +49,8 @@ Expected result:
   - filename
   - detected tags
   - thumbnail image
-  - full image URL
+  - `Thumbnail URL`
+  - `Full image URL`
 
 Example correct tags:
 
@@ -110,7 +111,7 @@ Expected result:
 
 ## 6. Thumbnail to Full Image
 
-Copy a `thumbnail_url` from a result card and paste it into `Thumbnail URL`.
+Copy `Thumbnail URL` from a result card and paste it into the `Thumbnail URL` query box.
 
 Click `Get full image`.
 
@@ -118,6 +119,7 @@ Expected result:
 
 - The result returns a signed full image URL.
 - Opening the URL shows the original uploaded media.
+- The copied input should come from the result card section labelled `Thumbnail URL`, not the `Full image URL` section.
 
 ## 7. Query by File Without Storing
 

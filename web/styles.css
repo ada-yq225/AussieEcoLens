@@ -258,6 +258,36 @@ button.danger {
   line-height: 1.45;
 }
 
+.url-block {
+  display: grid;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #edf2ec;
+}
+
+.url-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #31513b;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+button.copy {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #e6f0e6;
+  color: #1f593a;
+  font-size: 12px;
+}
+
+button.copy:hover {
+  background: #d7e8d8;
+}
+
 #status {
   color: #276344;
   font-weight: 800;

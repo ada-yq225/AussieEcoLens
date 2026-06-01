@@ -228,13 +228,36 @@ function renderResults(items) {
     const tags = document.createElement("code");
     tags.textContent = JSON.stringify(item.error ? { error: item.error } : item.tags || item, null, 2);
     card.appendChild(tags);
+    if (item.thumbnail_url) {
+      card.appendChild(urlBlock("Thumbnail URL", item.thumbnail_url));
+    }
     if (item.full_url) {
-      const url = document.createElement("code");
-      url.textContent = item.full_url;
-      card.appendChild(url);
+      card.appendChild(urlBlock("Full image URL", item.full_url));
     }
     $("results").appendChild(card);
   }
+}
+
+function urlBlock(label, value) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "url-block";
+  const head = document.createElement("div");
+  head.className = "url-head";
+  const title = document.createElement("span");
+  title.textContent = label;
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.className = "copy";
+  copy.textContent = "Copy";
+  copy.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(value);
+    setStatus(`${label} copied`);
+  });
+  head.append(title, copy);
+  const code = document.createElement("code");
+  code.textContent = value;
+  wrapper.append(head, code);
+  return wrapper;
 }
 
 async function uploadOne(file) {
