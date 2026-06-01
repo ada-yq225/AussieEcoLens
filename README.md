@@ -53,6 +53,12 @@ Run the workflow tests:
 python3 -m unittest discover -s tests
 ```
 
+Final manual testing instructions are in:
+
+```text
+README_TESTING.md
+```
+
 ## Demo Credentials
 
 The local demo has mock authentication so the complete workflow can be tested before touching cloud services.

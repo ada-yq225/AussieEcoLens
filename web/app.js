@@ -35,6 +35,51 @@ function setStatus(message) {
   $("status").textContent = message;
 }
 
+function summarizeFiles(files) {
+  if (!files.length) return "Images or videos, multiple files allowed";
+  const totalMb = files.reduce((sum, file) => sum + file.size, 0) / (1024 * 1024);
+  return `${files.length} file${files.length === 1 ? "" : "s"} selected, ${totalMb.toFixed(1)} MB total`;
+}
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`Could not read ${file.name}`));
+    };
+    image.src = url;
+  });
+}
+
+function canvasBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Image compression failed"))), type, quality);
+  });
+}
+
+async function prepareUploadFile(file) {
+  const maxDirectBytes = 4.5 * 1024 * 1024;
+  if (!isCloud || !file.type.startsWith("image/") || file.size <= maxDirectBytes) return file;
+  const image = await loadImage(file);
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0, width, height);
+  const blob = await canvasBlob(canvas, "image/jpeg", 0.82);
+  return new File([blob], file.name, { type: "image/jpeg", lastModified: file.lastModified });
+}
+
 function showApp() {
   $("auth-panel").classList.toggle("hidden", !!state.token);
   $("app-panel").classList.toggle("hidden", !state.token);
@@ -166,6 +211,7 @@ function renderResults(items) {
   for (const item of results) {
     const card = document.createElement("article");
     card.className = "result";
+    if (item.error) card.classList.add("error");
     if (item.thumbnail_url) {
       const link = document.createElement("a");
       link.href = item.full_url;
@@ -177,10 +223,10 @@ function renderResults(items) {
       card.appendChild(link);
     }
     const title = document.createElement("strong");
-    title.textContent = item.filename || "Result";
+    title.textContent = item.filename || item.file || "Result";
     card.appendChild(title);
     const tags = document.createElement("code");
-    tags.textContent = JSON.stringify(item.tags || item, null, 2);
+    tags.textContent = JSON.stringify(item.error ? { error: item.error } : item.tags || item, null, 2);
     card.appendChild(tags);
     if (item.full_url) {
       const url = document.createElement("code");
@@ -189,6 +235,14 @@ function renderResults(items) {
     }
     $("results").appendChild(card);
   }
+}
+
+async function uploadOne(file) {
+  const uploadFile = await prepareUploadFile(file);
+  const body = new FormData();
+  body.append("file", uploadFile, file.name);
+  const data = await api("/api/upload", { method: "POST", body });
+  return { ...data.media, duplicate: data.duplicate };
 }
 
 function wireForms() {
@@ -247,14 +301,40 @@ function wireForms() {
 
   $("upload-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const body = new FormData(event.target);
+    const files = Array.from(event.target.elements.file.files || []);
+    if (!files.length) {
+      setStatus("Choose at least one file");
+      return;
+    }
     try {
-      const data = await api("/api/upload", { method: "POST", body });
-      setStatus(data.duplicate ? "Duplicate file, existing record returned" : "Uploaded");
-      renderResults(data.media);
+      let completed = 0;
+      setStatus(`Uploading 0/${files.length}`);
+      const uploads = files.map(async (file) => {
+        try {
+          return await uploadOne(file);
+        } catch (error) {
+          return { file: file.name, error: error.message };
+        } finally {
+          completed += 1;
+          setStatus(`Uploading ${completed}/${files.length}`);
+        }
+      });
+      const results = await Promise.all(uploads);
+      const failed = results.filter((item) => item.error).length;
+      const duplicates = results.filter((item) => item.duplicate).length;
+      setStatus(
+        failed
+          ? `Uploaded ${results.length - failed}/${results.length}; ${failed} failed`
+          : `Uploaded ${results.length} file${results.length === 1 ? "" : "s"}${duplicates ? `, ${duplicates} duplicate` : ""}`
+      );
+      renderResults(results);
     } catch (error) {
       setStatus(error.message);
     }
+  });
+
+  $("upload-form").elements.file.addEventListener("change", (event) => {
+    $("upload-file-summary").textContent = summarizeFiles(Array.from(event.target.files || []));
   });
 
   $("tag-query-form").addEventListener("submit", async (event) => {

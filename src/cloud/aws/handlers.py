@@ -273,14 +273,23 @@ def signed_url(bucket: str, key: Optional[str]) -> Optional[str]:
     )
 
 
+def display_filename(filename: str, checksum: str) -> str:
+    cleaned = safe_filename(filename)
+    prefix = f"{checksum}_"
+    while cleaned.startswith(prefix):
+        cleaned = cleaned[len(prefix) :]
+    return cleaned or filename
+
+
 def media_payload(item: Dict[str, Any]) -> Dict[str, Any]:
     original_key = item["original_key"]
     thumbnail_key = item.get("thumbnail_key")
     frame_keys = item.get("frame_keys") or []
+    checksum = item["checksum"]
     return {
-        "id": item["checksum"],
-        "checksum": item["checksum"],
-        "filename": item["filename"],
+        "id": checksum,
+        "checksum": checksum,
+        "filename": display_filename(item["filename"], checksum),
         "media_type": item["media_type"],
         "storage_url": canonical_url(MEDIA_BUCKET, original_key),
         "thumbnail_storage_url": canonical_url(THUMBNAIL_BUCKET, thumbnail_key) if thumbnail_key else None,

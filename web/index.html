@@ -37,20 +37,39 @@
 
     <section id="app-panel" class="hidden">
       <div class="toolbar">
-        <strong id="user-label"></strong>
+        <div>
+          <span class="eyebrow">Signed in</span>
+          <strong id="user-label"></strong>
+        </div>
         <span id="status"></span>
       </div>
 
       <section class="band">
-        <h2>Upload</h2>
-        <form id="upload-form" class="inline">
-          <input name="file" type="file" accept="image/*,video/*" required>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Step 1</span>
+            <h2>Upload Media</h2>
+          </div>
+          <p>Select one or many images/videos. Each file is processed through the same cloud workflow.</p>
+        </div>
+        <form id="upload-form" class="upload-panel">
+          <label class="file-drop">
+            <span class="file-title">Choose wildlife media</span>
+            <span id="upload-file-summary" class="muted">Images or videos, multiple files allowed</span>
+            <input name="file" type="file" accept="image/*,video/*" multiple required>
+          </label>
           <button>Upload media</button>
         </form>
       </section>
 
       <section class="band">
-        <h2>Queries</h2>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Step 2</span>
+            <h2>Queries</h2>
+          </div>
+          <p>Search processed metadata by tag counts, species, thumbnail URL, or an unstored query file.</p>
+        </div>
         <div class="grid">
           <form id="tag-query-form">
             <label>Tag count JSON</label>
@@ -76,7 +95,13 @@
       </section>
 
       <section class="band">
-        <h2>Manage Tags and Files</h2>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Step 3</span>
+            <h2>Manage Tags and Files</h2>
+          </div>
+          <p>Add manual tags, remove tags, delete media, or register notification watches.</p>
+        </div>
         <div class="grid">
           <form id="edit-tags-form">
             <label>URLs, one per line</label>
@@ -106,7 +131,12 @@
       </section>
 
       <section class="band">
-        <h2>Results</h2>
+        <div class="section-head compact">
+          <div>
+            <span class="eyebrow">Output</span>
+            <h2>Results</h2>
+          </div>
+        </div>
         <div id="results" class="results"></div>
       </section>
     </section>
