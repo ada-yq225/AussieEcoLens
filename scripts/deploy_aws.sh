@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export PATH="/Users/yq225/Library/Python/3.9/bin:$PATH"
+export PATH="/Users/yq225/.local/bin:/Users/yq225/Library/Python/3.9/bin:$PATH"
 
 STACK_NAME="${STACK_NAME:-aussie-ecolens}"
 AWS_REGION="${AWS_REGION:-ap-southeast-2}"
@@ -13,20 +13,33 @@ GCP_SHARED_SECRET="${GCP_SHARED_SECRET:-}"
 FFMPEG_LAYER_ARN="${FFMPEG_LAYER_ARN:-}"
 
 sam build --template-file infra/aws/template.yaml
+
+PARAM_OVERRIDES=(
+  ProjectName="$STACK_NAME"
+  AppCallbackUrl="$APP_URL"
+  AppLogoutUrl="$APP_URL"
+  TaggerMode="$TAGGER_MODE"
+)
+
+if [[ -n "$NOTIFICATION_EMAIL" ]]; then
+  PARAM_OVERRIDES+=(NotificationEmail="$NOTIFICATION_EMAIL")
+fi
+if [[ -n "$GCP_MIRROR_ENDPOINT" ]]; then
+  PARAM_OVERRIDES+=(GcpMirrorEndpoint="$GCP_MIRROR_ENDPOINT")
+fi
+if [[ -n "$GCP_SHARED_SECRET" ]]; then
+  PARAM_OVERRIDES+=(GcpSharedSecret="$GCP_SHARED_SECRET")
+fi
+if [[ -n "$FFMPEG_LAYER_ARN" ]]; then
+  PARAM_OVERRIDES+=(FFmpegLayerArn="$FFMPEG_LAYER_ARN")
+fi
+
 sam deploy \
   --stack-name "$STACK_NAME" \
   --region "$AWS_REGION" \
   --capabilities CAPABILITY_IAM \
   --resolve-s3 \
-  --parameter-overrides \
-    ProjectName="$STACK_NAME" \
-    AppCallbackUrl="$APP_URL" \
-    AppLogoutUrl="$APP_URL" \
-    NotificationEmail="$NOTIFICATION_EMAIL" \
-    TaggerMode="$TAGGER_MODE" \
-    GcpMirrorEndpoint="$GCP_MIRROR_ENDPOINT" \
-    GcpSharedSecret="$GCP_SHARED_SECRET" \
-    FFmpegLayerArn="$FFMPEG_LAYER_ARN"
+  --parameter-overrides "${PARAM_OVERRIDES[@]}"
 
 API_URL="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --region "$AWS_REGION" --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)"
 COGNITO_DOMAIN="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --region "$AWS_REGION" --query "Stacks[0].Outputs[?OutputKey=='CognitoDomain'].OutputValue" --output text)"

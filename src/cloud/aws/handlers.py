@@ -12,6 +12,7 @@ import subprocess
 import time
 import urllib.parse
 import urllib.request
+from decimal import Decimal
 from typing import Any, Dict, Iterable, Optional, Tuple
 
 import boto3
@@ -64,6 +65,10 @@ VIDEO_TYPES = {".mp4", ".mov", ".avi", ".mkv", ".webm"}
 
 def table():
     return dynamodb.Table(MEDIA_TABLE)
+
+
+def now_ts() -> Decimal:
+    return Decimal(str(time.time()))
 
 
 def response(status: int, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -318,7 +323,7 @@ def put_media(filename: str, data: bytes, content_type: str, owner: str) -> Tupl
         "frame_keys": frame_keys,
         "tags": tags,
         "owner": owner,
-        "created_at": time.time(),
+        "created_at": now_ts(),
     }
     tbl.put_item(Item=item, ConditionExpression="attribute_not_exists(pk)")
     notify_watchers(tags.keys(), item)
@@ -377,7 +382,7 @@ def notify_watchers(tags: Iterable[str], media_item: Dict[str, Any]) -> None:
                     "tag": tag,
                     "media_checksum": media_item["checksum"],
                     "message": f"New or updated media matched watched tag: {tag}",
-                    "created_at": time.time(),
+                    "created_at": now_ts(),
                 }
             )
 
@@ -544,7 +549,7 @@ def api(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         "user_id": user_id(event),
                         "email": email,
                         "tag": str(tag),
-                        "created_at": time.time(),
+                        "created_at": now_ts(),
                     }
                 )
             return response(200, {"ok": True})

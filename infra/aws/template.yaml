@@ -39,6 +39,8 @@ Conditions:
 Globals:
   Function:
     Runtime: python3.11
+    Architectures:
+      - arm64
     Timeout: 60
     MemorySize: 1024
     Environment:
@@ -218,7 +220,7 @@ Resources:
                     - !Ref MediaBucket
                 object:
                   key:
-                    - prefix: originals/
+                    - prefix: incoming/
 
   ApiFunction:
     Type: AWS::Serverless::Function
