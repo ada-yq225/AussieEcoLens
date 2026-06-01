@@ -231,7 +231,7 @@ function renderResults(items) {
     if (item.thumbnail_url) {
       card.appendChild(urlBlock("Thumbnail URL", item.thumbnail_url));
     }
-    if (item.full_url) {
+    if (item.full_url && !item.thumbnail_url) {
       card.appendChild(urlBlock("Full image URL", item.full_url));
     }
     $("results").appendChild(card);

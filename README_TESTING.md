@@ -50,7 +50,6 @@ Expected result:
   - detected tags
   - thumbnail image
   - `Thumbnail URL`
-  - `Full image URL`
 
 Example correct tags:
 
@@ -119,6 +118,7 @@ Expected result:
 
 - The result returns a signed full image URL.
 - Opening the URL shows the original uploaded media.
+- Upload/query result cards show thumbnail URLs first; the full image URL is displayed after this lookup step.
 - The copied input should come from the result card section labelled `Thumbnail URL`, not the `Full image URL` section.
 
 ## 7. Query by File Without Storing
