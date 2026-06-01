@@ -25,9 +25,9 @@ Expected result:
 
 ## 2. Batch Upload Images
 
-In the `Upload Media` section:
+In the `Upload Images` panel:
 
-1. Click `Choose wildlife media`.
+1. Click `Choose images`.
 2. Select multiple files, for example:
 
 ```text
@@ -37,7 +37,7 @@ Casuarius_casuarius_2.JPG
 Felis_catus_2.JPG
 ```
 
-3. Click `Upload media`.
+3. Click `Upload images`.
 
 Expected result:
 
@@ -58,6 +58,8 @@ Example correct tags:
 {"casuarius_casuarius": 1}
 {"felis_catus": 1}
 ```
+
+The image and video upload panels are separate for clarity, but both feed the same Results area, query APIs, manual tag editor, delete workflow, and GCP mirror.
 
 ## 3. Duplicate Detection
 
@@ -170,12 +172,18 @@ Expected result:
 
 ## 10. Video Frame Extraction
 
-Upload a short `.mp4` video.
+In the `Upload Videos` panel:
+
+1. Click `Choose videos`.
+2. Select a short `.mp4` video.
+3. Click `Upload videos`.
 
 Expected result:
 
 - The media card shows `media_type: video`.
-- The response includes `frame_urls`.
+- The card shows `Open original video`.
+- The card shows `Extracted frames`.
+- Extracted frame previews are displayed with copy buttons.
 - The frame count should match roughly one extracted frame per second for the demo video duration.
 
 Use a short demo video. The direct API upload path is intended for small coursework demo files; very large videos can exceed API Gateway/Lambda request limits.

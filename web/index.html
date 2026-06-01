@@ -50,16 +50,36 @@
             <span class="eyebrow">Step 1</span>
             <h2>Upload Media</h2>
           </div>
-          <p>Select one or many images/videos. Each file is processed through the same cloud workflow.</p>
+          <p>Images and videos use separate controls, but both feed the same cloud workflow, search results, tag editor, and delete tools.</p>
         </div>
-        <form id="upload-form" class="upload-panel">
-          <label class="file-drop">
-            <span class="file-title">Choose wildlife media</span>
-            <span id="upload-file-summary" class="muted">Images or videos, multiple files allowed</span>
-            <input name="file" type="file" accept="image/*,video/*" multiple required>
-          </label>
-          <button>Upload media</button>
-        </form>
+        <div class="upload-split">
+          <form id="image-upload-form" class="upload-card image-card">
+            <div>
+              <span class="eyebrow">Images</span>
+              <h3>Upload Images</h3>
+              <p>Creates thumbnails and returns Thumbnail URLs for lookup.</p>
+            </div>
+            <label class="file-drop">
+              <span class="file-title">Choose images</span>
+              <span id="image-upload-file-summary" class="muted">Multiple images allowed</span>
+              <input name="file" type="file" accept="image/*" multiple required>
+            </label>
+            <button>Upload images</button>
+          </form>
+          <form id="video-upload-form" class="upload-card video-card">
+            <div>
+              <span class="eyebrow">Videos</span>
+              <h3>Upload Videos</h3>
+              <p>Extracts video frames and keeps the original video searchable.</p>
+            </div>
+            <label class="file-drop">
+              <span class="file-title">Choose videos</span>
+              <span id="video-upload-file-summary" class="muted">Use short demo videos</span>
+              <input name="file" type="file" accept="video/*" multiple required>
+            </label>
+            <button>Upload videos</button>
+          </form>
+        </div>
       </section>
 
       <section class="band">

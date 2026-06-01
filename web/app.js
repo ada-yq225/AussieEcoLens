@@ -225,6 +225,7 @@ function renderResults(items) {
     const title = document.createElement("strong");
     title.textContent = item.filename || item.file || "Result";
     card.appendChild(title);
+    if (item.media_type) card.appendChild(mediaBadge(item.media_type));
     if (item.error) {
       card.appendChild(errorBlock(item.error));
     } else if (item.tags) {
@@ -234,11 +235,21 @@ function renderResults(items) {
       card.appendChild(urlBlock("Thumbnail URL", item.thumbnail_url));
     }
     if (item.full_url && !item.thumbnail_url) {
-      card.appendChild(openOriginalBlock(item.full_url));
+      card.appendChild(openOriginalBlock(item.full_url, item.media_type));
       card.appendChild(urlBlock("Full image URL", item.full_url));
+    }
+    if (item.frame_urls && item.frame_urls.length) {
+      card.appendChild(framesBlock(item.frame_urls));
     }
     $("results").appendChild(card);
   }
+}
+
+function mediaBadge(mediaType) {
+  const badge = document.createElement("span");
+  badge.className = `media-badge ${mediaType === "video" ? "video" : "image"}`;
+  badge.textContent = mediaType === "video" ? "Video" : "Image";
+  return badge;
 }
 
 function errorBlock(message) {
@@ -313,15 +324,48 @@ function urlBlock(label, value) {
   return wrapper;
 }
 
-function openOriginalBlock(url) {
+function openOriginalBlock(url, mediaType = "image") {
   const wrapper = document.createElement("div");
   wrapper.className = "open-original";
   const link = document.createElement("a");
   link.href = url;
   link.target = "_blank";
   link.rel = "noopener";
-  link.textContent = "Open original image";
+  link.textContent = mediaType === "video" ? "Open original video" : "Open original image";
   wrapper.appendChild(link);
+  return wrapper;
+}
+
+function framesBlock(frameUrls) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "frames-block";
+  const title = document.createElement("div");
+  title.className = "frames-title";
+  title.textContent = `Extracted frames (${frameUrls.length})`;
+  const grid = document.createElement("div");
+  grid.className = "frames-grid";
+  frameUrls.forEach((url, index) => {
+    const item = document.createElement("div");
+    item.className = "frame-item";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = `Extracted frame ${index + 1}`;
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "copy";
+    copy.textContent = `Copy frame ${index + 1}`;
+    copy.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(url);
+      copy.textContent = "Copied";
+      setStatus(`Frame ${index + 1} URL copied`);
+      window.setTimeout(() => {
+        copy.textContent = `Copy frame ${index + 1}`;
+      }, 1600);
+    });
+    item.append(img, copy);
+    grid.appendChild(item);
+  });
+  wrapper.append(title, grid);
   return wrapper;
 }
 
@@ -331,6 +375,48 @@ async function uploadOne(file) {
   body.append("file", uploadFile, file.name);
   const data = await api("/api/upload", { method: "POST", body });
   return { ...data.media, duplicate: data.duplicate };
+}
+
+function wireUploadForm(formId, summaryId, emptyLabel) {
+  const form = $(formId);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const files = Array.from(event.target.elements.file.files || []);
+    if (!files.length) {
+      setStatus("Choose at least one file");
+      return;
+    }
+    try {
+      let completed = 0;
+      setStatus(`Uploading 0/${files.length}`);
+      const uploads = files.map(async (file) => {
+        try {
+          return await uploadOne(file);
+        } catch (error) {
+          return { file: file.name, error: error.message };
+        } finally {
+          completed += 1;
+          setStatus(`Uploading ${completed}/${files.length}`);
+        }
+      });
+      const results = await Promise.all(uploads);
+      const failed = results.filter((item) => item.error).length;
+      const duplicates = results.filter((item) => item.duplicate).length;
+      setStatus(
+        failed
+          ? `Uploaded ${results.length - failed}/${results.length}; ${failed} failed`
+          : `Uploaded ${results.length} file${results.length === 1 ? "" : "s"}${duplicates ? `, ${duplicates} duplicate` : ""}`
+      );
+      renderResults(results);
+    } catch (error) {
+      setStatus(error.message);
+    }
+  });
+
+  form.elements.file.addEventListener("change", (event) => {
+    const files = Array.from(event.target.files || []);
+    $(summaryId).textContent = files.length ? summarizeFiles(files) : emptyLabel;
+  });
 }
 
 function wireForms() {
@@ -387,43 +473,8 @@ function wireForms() {
     }
   });
 
-  $("upload-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const files = Array.from(event.target.elements.file.files || []);
-    if (!files.length) {
-      setStatus("Choose at least one file");
-      return;
-    }
-    try {
-      let completed = 0;
-      setStatus(`Uploading 0/${files.length}`);
-      const uploads = files.map(async (file) => {
-        try {
-          return await uploadOne(file);
-        } catch (error) {
-          return { file: file.name, error: error.message };
-        } finally {
-          completed += 1;
-          setStatus(`Uploading ${completed}/${files.length}`);
-        }
-      });
-      const results = await Promise.all(uploads);
-      const failed = results.filter((item) => item.error).length;
-      const duplicates = results.filter((item) => item.duplicate).length;
-      setStatus(
-        failed
-          ? `Uploaded ${results.length - failed}/${results.length}; ${failed} failed`
-          : `Uploaded ${results.length} file${results.length === 1 ? "" : "s"}${duplicates ? `, ${duplicates} duplicate` : ""}`
-      );
-      renderResults(results);
-    } catch (error) {
-      setStatus(error.message);
-    }
-  });
-
-  $("upload-form").elements.file.addEventListener("change", (event) => {
-    $("upload-file-summary").textContent = summarizeFiles(Array.from(event.target.files || []));
-  });
+  wireUploadForm("image-upload-form", "image-upload-file-summary", "Multiple images allowed");
+  wireUploadForm("video-upload-form", "video-upload-file-summary", "Use short demo videos");
 
   $("tag-query-form").addEventListener("submit", async (event) => {
     event.preventDefault();
