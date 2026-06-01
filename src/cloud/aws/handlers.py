@@ -180,9 +180,9 @@ def rekognition_tags(data: bytes) -> Dict[str, int]:
     return tags
 
 
-def video_frame_tags(data: bytes) -> Dict[str, int]:
+def extract_video_frames(data: bytes, checksum: str) -> list[Tuple[str, bytes]]:
     if not os.path.exists(FFMPEG_PATH):
-        return {}
+        return []
     source = f"/tmp/video-{sha256(data)}"
     frames_dir = f"/tmp/frames-{int(time.time() * 1000)}"
     os.makedirs(frames_dir, exist_ok=True)
@@ -203,24 +203,34 @@ def video_frame_tags(data: bytes) -> Dict[str, int]:
         stderr=subprocess.DEVNULL,
         timeout=45,
     )
-    combined: Dict[str, int] = {}
-    for filename in os.listdir(frames_dir):
+    frames = []
+    for filename in sorted(os.listdir(frames_dir)):
         if not filename.endswith(".jpg"):
             continue
         with open(os.path.join(frames_dir, filename), "rb") as handle:
-            frame_tags = rekognition_tags(handle.read()) if TAGGER_MODE == "rekognition" else {}
+            frame_data = handle.read()
+        key = f"video-frames/{checksum}/{filename}"
+        s3.put_object(Bucket=THUMBNAIL_BUCKET, Key=key, Body=frame_data, ContentType="image/jpeg")
+        frames.append((key, frame_data))
+    return frames
+
+
+def video_frame_tags(frames: list[Tuple[str, bytes]]) -> Dict[str, int]:
+    combined: Dict[str, int] = {}
+    for _, frame_data in frames:
+        frame_tags = rekognition_tags(frame_data) if TAGGER_MODE == "rekognition" else {}
         for tag, count in frame_tags.items():
             combined[tag] = combined.get(tag, 0) + count
     return combined
 
 
-def detect_tags(filename: str, data: bytes, media_type: str) -> Dict[str, int]:
+def detect_tags(filename: str, data: bytes, media_type: str, frames: Optional[list[Tuple[str, bytes]]] = None) -> Dict[str, int]:
     if media_type == "image" and TAGGER_MODE == "rekognition":
         tags = rekognition_tags(data)
         if tags:
             return tags
     if media_type == "video":
-        tags = video_frame_tags(data)
+        tags = video_frame_tags(frames or [])
         if tags:
             return tags
     return filename_tags(filename, data)
@@ -261,6 +271,7 @@ def signed_url(bucket: str, key: Optional[str]) -> Optional[str]:
 def media_payload(item: Dict[str, Any]) -> Dict[str, Any]:
     original_key = item["original_key"]
     thumbnail_key = item.get("thumbnail_key")
+    frame_keys = item.get("frame_keys") or []
     return {
         "id": item["checksum"],
         "checksum": item["checksum"],
@@ -270,6 +281,8 @@ def media_payload(item: Dict[str, Any]) -> Dict[str, Any]:
         "thumbnail_storage_url": canonical_url(THUMBNAIL_BUCKET, thumbnail_key) if thumbnail_key else None,
         "full_url": signed_url(MEDIA_BUCKET, original_key),
         "thumbnail_url": signed_url(THUMBNAIL_BUCKET, thumbnail_key) if thumbnail_key else None,
+        "frame_urls": [signed_url(THUMBNAIL_BUCKET, key) for key in frame_keys],
+        "frame_storage_urls": [canonical_url(THUMBNAIL_BUCKET, key) for key in frame_keys],
         "tags": {k: int(v) for k, v in item.get("tags", {}).items()},
         "created_at": float(item.get("created_at", 0)),
     }
@@ -291,7 +304,9 @@ def put_media(filename: str, data: bytes, content_type: str, owner: str) -> Tupl
         ContentType=content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream",
     )
     thumbnail_key = create_thumbnail(data, checksum) if media_type == "image" else None
-    tags = detect_tags(filename, data, media_type)
+    frames = extract_video_frames(data, checksum) if media_type == "video" else []
+    frame_keys = [key for key, _ in frames]
+    tags = detect_tags(filename, data, media_type, frames)
     item = {
         "pk": f"MEDIA#{checksum}",
         "kind": "MEDIA",
@@ -300,6 +315,7 @@ def put_media(filename: str, data: bytes, content_type: str, owner: str) -> Tupl
         "media_type": media_type,
         "original_key": key,
         "thumbnail_key": thumbnail_key or "",
+        "frame_keys": frame_keys,
         "tags": tags,
         "owner": owner,
         "created_at": time.time(),
@@ -496,6 +512,8 @@ def api(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 s3.delete_object(Bucket=MEDIA_BUCKET, Key=item["original_key"])
                 if item.get("thumbnail_key"):
                     s3.delete_object(Bucket=THUMBNAIL_BUCKET, Key=item["thumbnail_key"])
+                for frame_key in item.get("frame_keys", []):
+                    s3.delete_object(Bucket=THUMBNAIL_BUCKET, Key=frame_key)
                 tbl.delete_item(Key={"pk": item["pk"]})
                 deleted.append(item["checksum"])
             return response(200, {"deleted": deleted})

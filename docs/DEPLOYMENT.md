@@ -70,6 +70,8 @@ scripts/deploy_aws.sh
 
 Use `TAGGER_MODE=rekognition` only after you confirm that your AWS account has Rekognition access and you accept possible service cost.
 
+Set `FFMPEG_LAYER_ARN` to a Lambda layer that contains `/opt/bin/ffmpeg` for final video compliance.
+
 ## After AWS Deploy
 
 1. Confirm the SNS subscription email.
@@ -114,8 +116,27 @@ For AWS Lambda, the supplied model package is too large for the simple zip-based
 
 The current SAM template remains deployable with `TAGGER_MODE=filename` or `TAGGER_MODE=rekognition`.
 
+## Security Controls
+
+- API Gateway is configured with a Cognito JWT authorizer as the default authorizer.
+- The local demo blocks protected APIs unless a bearer token from local sign-in is provided.
+- The cloud UI redirects users through Cognito Hosted UI and stores Cognito tokens locally for authenticated API calls.
+- S3, DynamoDB, SNS, and Rekognition access are granted to Lambda through scoped SAM policies, not broad user credentials.
+
+## Video Processing
+
+For final video compliance, set `FFMPEG_LAYER_ARN` to a Lambda layer that contains `/opt/bin/ffmpeg`.
+
+When configured, video uploads are processed as follows:
+
+1. Lambda writes the uploaded video to `/tmp`.
+2. `ffmpeg -vf fps=1` extracts one JPEG frame per second.
+3. Frames are uploaded to the thumbnail bucket under `video-frames/{checksum}/`.
+4. API responses include `frame_urls` and `frame_storage_urls`.
+5. Deleting the video also deletes extracted frames.
+
 ## Important Limitations To Resolve Before Submission
 
-- Use the teaching-provided model if required by your tutor.
-- Set `FFMPEG_LAYER_ARN` to an ffmpeg Lambda layer ARN for true video 1 frame/second extraction.
+- Cloud deployment still requires AWS/GCP login and CLI tools on the machine.
+- Set `FFMPEG_LAYER_ARN` to an ffmpeg Lambda layer ARN before the final cloud demo.
 - Replace `APP_URL=http://127.0.0.1:8080/` with the final hosted UI URL if you deploy the frontend publicly.

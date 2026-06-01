@@ -35,6 +35,12 @@ The course model mode expects `.venv312` to exist and the supplied files to be a
 - `/Users/yq225/Downloads/作业资料/AussieEcoLense/model.pt`
 - `/Users/yq225/Downloads/作业资料/AussieEcoLense/mdv5a.pt`
 
+The Python 3.12 ML environment is local-only and ignored by git:
+
+```text
+/Users/yq225/AussieEcoLens/.venv312
+```
+
 Then open:
 
 ```text

@@ -5,7 +5,8 @@
 - [x] AWS Cognito sign-up with email, first name, last name, and password configured in SAM template.
 - [x] Email verification flow configured through Cognito.
 - [x] Sign-in and sign-out implemented through Cognito Hosted UI in cloud mode.
-- [ ] Unauthenticated users blocked from protected pages and APIs.
+- [x] Unauthenticated API access blocked by local bearer-token middleware and AWS API Gateway Cognito authorizer.
+- [x] Cloud UI uses Cognito Hosted UI before showing protected workflows.
 - [x] Fine-grained SAM IAM policies for S3, DynamoDB, Lambda, SNS, and optional Rekognition.
 
 ## File Handling
@@ -14,9 +15,9 @@
 - [x] SHA-256 checksum deduplication.
 - [x] Image thumbnail generation with preserved aspect ratio.
 - [x] Cloud event trigger on upload configured for S3 object-created events.
-- [ ] Video 1 frame/second extraction in cloud or ffmpeg-enabled environment.
+- [x] Video 1 frame/second extraction implemented for AWS Lambda when `FFMPEG_LAYER_ARN` is configured; extracted frame URLs are stored and returned.
 - [x] Demo tagging and database insertion.
-- [ ] Production teaching-provided ML model integration.
+- [x] Production teaching-provided ML model integrated for local final demo via `LOCAL_TAGGER_MODE=course`.
 
 ## Queries
 

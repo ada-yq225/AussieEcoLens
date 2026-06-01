@@ -21,11 +21,12 @@
 5. Query `{"koala": 2, "wombat": 1}` and show AND result.
 6. Click thumbnail to open the full image.
 7. Query by species `koala`.
-8. Upload a query-only image and show matching database results without permanent storage.
-9. Add manual tag `dingo` to the uploaded file.
-10. Query `dingo`.
-11. Subscribe to `koala` notifications and upload/update matching media.
-12. Delete the file and show it disappears from query results.
+8. Upload a short video after `FFMPEG_LAYER_ARN` is configured and show returned `frame_urls`.
+9. Upload a query-only image and show matching database results without permanent storage.
+10. Add manual tag `dingo` to the uploaded file.
+11. Query `dingo`.
+12. Subscribe to `koala` notifications and upload/update matching media.
+13. Delete the file and show it disappears from query results.
 
 ## Expected Q&A Points
 
@@ -35,4 +36,3 @@
 - UI is a convenience layer over the REST APIs.
 - Cognito is mandatory for auth; IAM policies restrict cloud resources.
 - Cost is controlled through serverless services, small demo files, and cleanup.
-
