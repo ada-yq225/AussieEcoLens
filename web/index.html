@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aussie EcoLens</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Aussie EcoLens</h1>
+      <p>Multi-cloud wildlife media demo</p>
+    </div>
+    <button id="signout" class="secondary hidden">Sign out</button>
+  </header>
+
+  <main>
+    <section id="auth-panel" class="band">
+      <div class="two-col">
+        <form id="signup-form">
+          <h2>Create account</h2>
+          <input name="email" type="email" placeholder="Email" required>
+          <input name="first_name" placeholder="First name" required>
+          <input name="last_name" placeholder="Last name" required>
+          <input name="password" type="password" placeholder="Password" required>
+          <button>Create account</button>
+        </form>
+        <form id="signin-form">
+          <h2>Sign in</h2>
+          <input name="email" type="email" placeholder="Email" required>
+          <input name="password" type="password" placeholder="Password" required>
+          <button>Sign in</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="app-panel" class="hidden">
+      <div class="toolbar">
+        <strong id="user-label"></strong>
+        <span id="status"></span>
+      </div>
+
+      <section class="band">
+        <h2>Upload</h2>
+        <form id="upload-form" class="inline">
+          <input name="file" type="file" accept="image/*,video/*" required>
+          <button>Upload media</button>
+        </form>
+      </section>
+
+      <section class="band">
+        <h2>Queries</h2>
+        <div class="grid">
+          <form id="tag-query-form">
+            <label>Tag count JSON</label>
+            <textarea name="tags">{"koala": 1}</textarea>
+            <button>Find by tags</button>
+          </form>
+          <form id="species-query-form">
+            <label>Species</label>
+            <input name="species" placeholder="dingo">
+            <button>Find species</button>
+          </form>
+          <form id="thumb-query-form">
+            <label>Thumbnail URL</label>
+            <input name="thumbnail_url" placeholder="/var/storage/thumbnails/...jpg">
+            <button>Get full image</button>
+          </form>
+          <form id="file-query-form">
+            <label>Query by file</label>
+            <input name="file" type="file" accept="image/*,video/*" required>
+            <button>Find matching media</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="band">
+        <h2>Manage Tags and Files</h2>
+        <div class="grid">
+          <form id="edit-tags-form">
+            <label>URLs, one per line</label>
+            <textarea name="urls"></textarea>
+            <label>Tags, comma separated</label>
+            <input name="tags" placeholder="koala,wombat">
+            <label>Operation</label>
+            <select name="operation">
+              <option value="1">Add</option>
+              <option value="0">Remove</option>
+            </select>
+            <button>Apply tag change</button>
+          </form>
+          <form id="delete-form">
+            <label>URLs, one per line</label>
+            <textarea name="urls"></textarea>
+            <button class="danger">Delete files</button>
+          </form>
+          <form id="watch-form">
+            <label>Watch tags</label>
+            <input name="tags" placeholder="koala,dingo">
+            <label>Email</label>
+            <input name="email" type="email" placeholder="you@example.com">
+            <button>Watch</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="band">
+        <h2>Results</h2>
+        <div id="results" class="results"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/config.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

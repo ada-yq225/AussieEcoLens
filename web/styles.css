@@ -1,0 +1,155 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f7f4;
+  color: #142016;
+}
+
+body {
+  margin: 0;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px clamp(16px, 4vw, 48px);
+  background: #173d2b;
+  color: white;
+}
+
+h1, h2, p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+h2 {
+  margin-bottom: 14px;
+  font-size: 20px;
+}
+
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.band {
+  margin-bottom: 22px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #d9e1d8;
+  border-radius: 8px;
+}
+
+.two-col,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+.inline {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #b8c7b7;
+  border-radius: 6px;
+  padding: 10px;
+  background: white;
+}
+
+textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+button {
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: #246b47;
+  color: white;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #e8efe7;
+  color: #173d2b;
+}
+
+button.danger {
+  background: #9d2f2f;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.hidden {
+  display: none;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.result {
+  border: 1px solid #d9e1d8;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fbfdfb;
+}
+
+.result img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #e8efe7;
+}
+
+.result code {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+#status {
+  color: #40624c;
+}
+
+@media (max-width: 640px) {
+  header,
+  .toolbar,
+  .inline {
+    display: grid;
+  }
+}
+

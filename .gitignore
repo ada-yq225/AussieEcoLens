@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+var/
+.aws-sam/
+.venv312/
+.runtime_tmp/
+test_kangaroo.jpg

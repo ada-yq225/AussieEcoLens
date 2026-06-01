@@ -1,0 +1,262 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Aussie EcoLens final AWS serverless resources.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: aussie-ecolens
+  AppCallbackUrl:
+    Type: String
+    Default: http://127.0.0.1:8080/
+  AppLogoutUrl:
+    Type: String
+    Default: http://127.0.0.1:8080/
+  NotificationEmail:
+    Type: String
+    Default: ''
+  TaggerMode:
+    Type: String
+    Default: filename
+    AllowedValues:
+      - filename
+      - rekognition
+  GcpMirrorEndpoint:
+    Type: String
+    Default: ''
+  GcpSharedSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+  FFmpegLayerArn:
+    Type: String
+    Default: ''
+
+Conditions:
+  HasNotificationEmail: !Not [!Equals [!Ref NotificationEmail, '']]
+  HasFFmpegLayer: !Not [!Equals [!Ref FFmpegLayerArn, '']]
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 60
+    MemorySize: 1024
+    Environment:
+      Variables:
+        MEDIA_TABLE: !Ref MediaTable
+        MEDIA_BUCKET: !Ref MediaBucket
+        THUMBNAIL_BUCKET: !Ref ThumbnailBucket
+        SNS_TOPIC_ARN: !Ref TagNotificationTopic
+        TAGGER_MODE: !Ref TaggerMode
+        GCP_MIRROR_ENDPOINT: !Ref GcpMirrorEndpoint
+        GCP_SHARED_SECRET: !Ref GcpSharedSecret
+        FFMPEG_PATH: /opt/bin/ffmpeg
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub '${ProjectName}-users'
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+        - Name: given_name
+          Required: true
+          Mutable: true
+        - Name: family_name
+          Required: true
+          Mutable: true
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub '${ProjectName}-${AWS::AccountId}-${AWS::Region}'
+      UserPoolId: !Ref UserPool
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub '${ProjectName}-web'
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      CallbackURLs:
+        - !Ref AppCallbackUrl
+      LogoutURLs:
+        - !Ref AppLogoutUrl
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  MediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, POST]
+            AllowedOrigins: ['*']
+
+  ThumbnailBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET]
+            AllowedOrigins: ['*']
+
+  MediaTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-metadata'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+
+  TagNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-tag-notifications'
+
+  NotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasNotificationEmail
+    Properties:
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+      TopicArn: !Ref TagNotificationTopic
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowHeaders:
+          - authorization
+          - content-type
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowOrigins:
+          - '*'
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            IdentitySource: '$request.header.Authorization'
+            JwtConfiguration:
+              issuer: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}'
+              audience:
+                - !Ref UserPoolClient
+        DefaultAuthorizer: CognitoAuthorizer
+
+  UploadProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/cloud/aws/
+      Handler: handlers.upload
+      Layers: !If
+        - HasFFmpegLayer
+        - [!Ref FFmpegLayerArn]
+        - !Ref AWS::NoValue
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref MediaBucket
+        - S3WritePolicy:
+            BucketName: !Ref MediaBucket
+        - S3WritePolicy:
+            BucketName: !Ref ThumbnailBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MediaTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt TagNotificationTopic.TopicName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - rekognition:DetectLabels
+              Resource: '*'
+      Events:
+        MediaCreated:
+          Type: S3
+          Properties:
+            Bucket: !Ref MediaBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: originals/
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/cloud/aws/
+      Handler: handlers.api
+      Layers: !If
+        - HasFFmpegLayer
+        - [!Ref FFmpegLayerArn]
+        - !Ref AWS::NoValue
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref MediaBucket
+        - S3CrudPolicy:
+            BucketName: !Ref ThumbnailBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MediaTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt TagNotificationTopic.TopicName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - rekognition:DetectLabels
+              Resource: '*'
+      Events:
+        Proxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+  CognitoDomain:
+    Value: !Sub 'https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com'
+  ApiUrl:
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com'
+  MediaBucket:
+    Value: !Ref MediaBucket
+  ThumbnailBucket:
+    Value: !Ref ThumbnailBucket
+  MediaTable:
+    Value: !Ref MediaTable
+  SnsTopicArn:
+    Value: !Ref TagNotificationTopic
