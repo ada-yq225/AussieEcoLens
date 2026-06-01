@@ -8,6 +8,29 @@ const $ = (id) => document.getElementById(id);
 const config = window.AUSSIE_CONFIG || { mode: "local", apiBaseUrl: "" };
 const isCloud = config.mode === "cloud";
 
+function clearSession() {
+  state.token = "";
+  state.idToken = "";
+  state.user = null;
+  localStorage.removeItem("token");
+  localStorage.removeItem("idToken");
+  localStorage.removeItem("user");
+}
+
+function tokenExpired(token) {
+  if (!token) return true;
+  try {
+    const claims = decodeJwt(token);
+    return Number(claims.exp || 0) * 1000 <= Date.now();
+  } catch (_error) {
+    return true;
+  }
+}
+
+if (isCloud && tokenExpired(state.idToken)) {
+  clearSession();
+}
+
 function setStatus(message) {
   $("status").textContent = message;
 }
@@ -24,9 +47,26 @@ async function api(path, options = {}) {
   if (!(options.body instanceof FormData)) headers["content-type"] = "application/json";
   const bearer = state.idToken || state.token;
   if (bearer) headers.authorization = `Bearer ${bearer}`;
-  const response = await fetch(`${config.apiBaseUrl || ""}${path}`, { ...options, headers });
+  let response;
+  try {
+    response = await fetch(`${config.apiBaseUrl || ""}${path}`, { ...options, headers });
+  } catch (error) {
+    if (isCloud) {
+      clearSession();
+      showApp();
+      throw new Error("Cloud session expired or blocked. Please sign in again.");
+    }
+    throw error;
+  }
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Request failed");
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      clearSession();
+      showApp();
+      throw new Error("Session expired. Please sign in again.");
+    }
+    throw new Error(data.error || "Request failed");
+  }
   return data;
 }
 
@@ -187,7 +227,7 @@ function wireForms() {
       state.token = "";
       state.idToken = "";
       state.user = null;
-      localStorage.clear();
+      clearSession();
       if (isCloud) {
         const params = new URLSearchParams({
           client_id: config.cognitoClientId,
