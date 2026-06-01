@@ -20,6 +20,7 @@ Required services:
 Install/login requirements:
 
 ```bash
+export PATH="/Users/yq225/Library/Python/3.9/bin:$PATH"
 aws configure sso
 aws sts get-caller-identity
 sam --version

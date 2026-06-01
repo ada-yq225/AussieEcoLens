@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export PATH="/Users/yq225/Library/Python/3.9/bin:$PATH"
+
 STACK_NAME="${STACK_NAME:-aussie-ecolens}"
 AWS_REGION="${AWS_REGION:-ap-southeast-2}"
 APP_URL="${APP_URL:-http://127.0.0.1:8080/}"

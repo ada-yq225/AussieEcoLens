@@ -6,3 +6,4 @@ var/
 .venv312/
 .runtime_tmp/
 test_kangaroo.jpg
+.sam-home/

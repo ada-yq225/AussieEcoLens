@@ -104,6 +104,9 @@ Resources:
   MediaBucket:
     Type: AWS::S3::Bucket
     Properties:
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -202,15 +205,20 @@ Resources:
               Resource: '*'
       Events:
         MediaCreated:
-          Type: S3
+          Type: EventBridgeRule
           Properties:
-            Bucket: !Ref MediaBucket
-            Events: s3:ObjectCreated:*
-            Filter:
-              S3Key:
-                Rules:
-                  - Name: prefix
-                    Value: originals/
+            Pattern:
+              source:
+                - aws.s3
+              detail-type:
+                - Object Created
+              detail:
+                bucket:
+                  name:
+                    - !Ref MediaBucket
+                object:
+                  key:
+                    - prefix: originals/
 
   ApiFunction:
     Type: AWS::Serverless::Function

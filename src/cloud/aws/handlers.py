@@ -430,6 +430,18 @@ def media_from_url(url: str) -> Optional[Dict[str, Any]]:
 
 
 def upload(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    processed = 0
+    if event.get("source") == "aws.s3" and event.get("detail"):
+        detail = event["detail"]
+        bucket = detail["bucket"]["name"]
+        key = urllib.parse.unquote_plus(detail["object"]["key"])
+        if bucket == MEDIA_BUCKET:
+            obj = s3.get_object(Bucket=bucket, Key=key)
+            filename = os.path.basename(key)
+            put_media(filename, obj["Body"].read(), obj.get("ContentType") or "application/octet-stream", "s3-event")
+            processed += 1
+        return response(200, {"ok": True, "records": processed})
+
     for record in event.get("Records", []):
         bucket = record["s3"]["bucket"]["name"]
         key = urllib.parse.unquote_plus(record["s3"]["object"]["key"])
@@ -438,7 +450,8 @@ def upload(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         obj = s3.get_object(Bucket=bucket, Key=key)
         filename = os.path.basename(key)
         put_media(filename, obj["Body"].read(), obj.get("ContentType") or "application/octet-stream", "s3-event")
-    return response(200, {"ok": True, "records": len(event.get("Records", []))})
+        processed += 1
+    return response(200, {"ok": True, "records": processed})
 
 
 def api(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
