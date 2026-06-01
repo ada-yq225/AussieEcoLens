@@ -308,6 +308,21 @@ button.danger {
   font-weight: 800;
 }
 
+.open-original a {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #247348;
+  color: white;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+}
+
+.open-original a:hover {
+  background: #1d5f3b;
+}
+
 .url-block {
   display: grid;
   gap: 6px;

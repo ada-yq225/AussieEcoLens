@@ -225,11 +225,16 @@ function renderResults(items) {
     const title = document.createElement("strong");
     title.textContent = item.filename || item.file || "Result";
     card.appendChild(title);
-    card.appendChild(item.error ? errorBlock(item.error) : tagsBlock(item.tags || item));
+    if (item.error) {
+      card.appendChild(errorBlock(item.error));
+    } else if (item.tags) {
+      card.appendChild(tagsBlock(item.tags));
+    }
     if (item.thumbnail_url) {
       card.appendChild(urlBlock("Thumbnail URL", item.thumbnail_url));
     }
     if (item.full_url && !item.thumbnail_url) {
+      card.appendChild(openOriginalBlock(item.full_url));
       card.appendChild(urlBlock("Full image URL", item.full_url));
     }
     $("results").appendChild(card);
@@ -289,7 +294,11 @@ function urlBlock(label, value) {
   copy.textContent = "Copy";
   copy.addEventListener("click", async () => {
     await navigator.clipboard.writeText(value);
+    copy.textContent = "Copied";
     setStatus(`${label} copied`);
+    window.setTimeout(() => {
+      copy.textContent = "Copy";
+    }, 1600);
   });
   actions.append(toggle, copy);
   head.append(title, actions);
@@ -301,6 +310,18 @@ function urlBlock(label, value) {
     toggle.textContent = collapsed ? "Show" : "Hide";
   });
   wrapper.append(head, code);
+  return wrapper;
+}
+
+function openOriginalBlock(url) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "open-original";
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.textContent = "Open original image";
+  wrapper.appendChild(link);
   return wrapper;
 }
 
