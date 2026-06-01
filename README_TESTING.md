@@ -59,7 +59,7 @@ Example correct tags:
 {"felis_catus": 1}
 ```
 
-The image and video upload panels are separate for clarity, but both feed the same Results area, query APIs, manual tag editor, delete workflow, and GCP mirror.
+Use the Image/Video mode switch in the upload section. The controls are separated for clarity, but both modes feed the same Results area, query APIs, manual tag editor, delete workflow, and GCP mirror.
 
 ## 3. Duplicate Detection
 
@@ -172,7 +172,7 @@ Expected result:
 
 ## 10. Video Frame Extraction
 
-In the `Upload Videos` panel:
+Switch to `Video mode`, then use the `Upload Videos` panel:
 
 1. Click `Choose videos`.
 2. Select a short `.mp4` video.
@@ -184,9 +184,11 @@ Expected result:
 - The card shows `Open original video`.
 - The card shows `Extracted frames`.
 - Extracted frame previews are displayed with copy buttons.
-- The frame count should match roughly one extracted frame per second for the demo video duration.
+- The frame count should match roughly one extracted frame per second for the demo video duration. A 3-second video returns about 3 frame URLs; a 10-second video returns about 10.
 
-Use a short demo video. The direct API upload path is intended for small coursework demo files; very large videos can exceed API Gateway/Lambda request limits.
+Supported video extensions include `.mp4`, `.mov`, `.avi`, `.mkv`, `.webm`, `.m4v`, `.mpg`, `.mpeg`, `.3gp`, `.3g2`, `.wmv`, `.flv`, `.ts`, `.m2ts`, and `.ogv`, subject to ffmpeg codec support.
+
+Use a short demo video. There is no hard 3-second rule, but the direct API upload path is intended for small coursework demo files; very large videos can exceed API Gateway/Lambda request limits.
 
 ## 11. GCP Mirror Check
 

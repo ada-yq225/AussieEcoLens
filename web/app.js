@@ -341,7 +341,7 @@ function framesBlock(frameUrls) {
   wrapper.className = "frames-block";
   const title = document.createElement("div");
   title.className = "frames-title";
-  title.textContent = `Extracted frames (${frameUrls.length})`;
+  title.textContent = `Extracted frames (${frameUrls.length}, 1/sec)`;
   const grid = document.createElement("div");
   grid.className = "frames-grid";
   frameUrls.forEach((url, index) => {
@@ -419,6 +419,15 @@ function wireUploadForm(formId, summaryId, emptyLabel) {
   });
 }
 
+function setUploadMode(mode) {
+  document.querySelectorAll("[data-upload-mode]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.uploadMode === mode);
+  });
+  document.querySelectorAll("[data-upload-panel]").forEach((panel) => {
+    panel.classList.toggle("hidden", panel.dataset.uploadPanel !== mode);
+  });
+}
+
 function wireForms() {
   $("signup-form").addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -475,6 +484,9 @@ function wireForms() {
 
   wireUploadForm("image-upload-form", "image-upload-file-summary", "Multiple images allowed");
   wireUploadForm("video-upload-form", "video-upload-file-summary", "Use short demo videos");
+  document.querySelectorAll("[data-upload-mode]").forEach((button) => {
+    button.addEventListener("click", () => setUploadMode(button.dataset.uploadMode));
+  });
 
   $("tag-query-form").addEventListener("submit", async (event) => {
     event.preventDefault();

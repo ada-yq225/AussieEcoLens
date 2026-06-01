@@ -50,10 +50,14 @@
             <span class="eyebrow">Step 1</span>
             <h2>Upload Media</h2>
           </div>
-          <p>Images and videos use separate controls, but both feed the same cloud workflow, search results, tag editor, and delete tools.</p>
+          <p>Switch between image and video mode. Both modes feed the same cloud workflow, search, tag editor, delete tools, and GCP mirror.</p>
         </div>
-        <div class="upload-split">
-          <form id="image-upload-form" class="upload-card image-card">
+        <div class="mode-toggle" aria-label="Upload mode">
+          <button type="button" class="active" data-upload-mode="image">Image mode</button>
+          <button type="button" data-upload-mode="video">Video mode</button>
+        </div>
+        <div class="upload-modes">
+          <form id="image-upload-form" class="upload-card image-card upload-mode-panel" data-upload-panel="image">
             <div>
               <span class="eyebrow">Images</span>
               <h3>Upload Images</h3>
@@ -66,11 +70,11 @@
             </label>
             <button>Upload images</button>
           </form>
-          <form id="video-upload-form" class="upload-card video-card">
+          <form id="video-upload-form" class="upload-card video-card upload-mode-panel hidden" data-upload-panel="video">
             <div>
               <span class="eyebrow">Videos</span>
               <h3>Upload Videos</h3>
-              <p>Extracts video frames and keeps the original video searchable.</p>
+              <p>Supports common short demo videos including MP4, MOV, AVI, MKV, WebM, M4V, MPEG, 3GP, WMV, FLV, TS, and OGV. Frames are extracted at 1 frame per second.</p>
             </div>
             <label class="file-drop">
               <span class="file-title">Choose videos</span>

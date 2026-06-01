@@ -41,7 +41,7 @@ SPECIES = {
     "possum",
 }
 IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
-VIDEO_TYPES = {".mp4", ".mov", ".avi", ".mkv", ".webm"}
+VIDEO_TYPES = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v", ".mpg", ".mpeg", ".3gp", ".3g2", ".wmv", ".flv", ".ts", ".m2ts", ".ogv"}
 
 
 def init_db() -> None:
