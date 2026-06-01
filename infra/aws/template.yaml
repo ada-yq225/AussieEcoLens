@@ -40,7 +40,7 @@ Globals:
   Function:
     Runtime: python3.11
     Architectures:
-      - arm64
+      - x86_64
     Timeout: 60
     MemorySize: 1024
     Environment:

@@ -65,7 +65,7 @@ export NOTIFICATION_EMAIL=YOUR_EMAIL
 export TAGGER_MODE=filename
 export GCP_MIRROR_ENDPOINT=THE_GCP_FUNCTION_URL
 export GCP_SHARED_SECRET=the-same-secret
-export FFMPEG_LAYER_ARN=
+export FFMPEG_LAYER_ARN=arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1
 scripts/deploy_aws.sh
 ```
 
@@ -135,6 +135,23 @@ When configured, video uploads are processed as follows:
 3. Frames are uploaded to the thumbnail bucket under `video-frames/{checksum}/`.
 4. API responses include `frame_urls` and `frame_storage_urls`.
 5. Deleting the video also deletes extracted frames.
+
+Verified cloud result:
+
+```text
+media_type: video
+frame_url_count: 3
+frame_storage_urls:
+- s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/.../frame-0001.jpg
+- s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/.../frame-0002.jpg
+- s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/.../frame-0003.jpg
+```
+
+The current AWS deployment uses the public ffmpeg layer:
+
+```text
+arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1
+```
 
 ## Important Limitations To Resolve Before Submission
 

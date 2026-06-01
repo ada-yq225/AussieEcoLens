@@ -7,3 +7,4 @@ var/
 .runtime_tmp/
 test_kangaroo.jpg
 .sam-home/
+tools/

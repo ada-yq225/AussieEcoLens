@@ -15,7 +15,7 @@
 - [x] SHA-256 checksum deduplication.
 - [x] Image thumbnail generation with preserved aspect ratio.
 - [x] Cloud event trigger on upload configured for S3 object-created events.
-- [x] Video 1 frame/second extraction implemented for AWS Lambda when `FFMPEG_LAYER_ARN` is configured; extracted frame URLs are stored and returned.
+- [x] Video 1 frame/second extraction implemented and verified in AWS Lambda with `FFMPEG_LAYER_ARN`; extracted frame URLs are stored and returned.
 - [x] Demo tagging and database insertion.
 - [x] Production teaching-provided ML model integrated for local final demo via `LOCAL_TAGGER_MODE=course`.
 
@@ -32,6 +32,7 @@
 
 - [x] Local notification log for watched tags.
 - [x] AWS SNS email notifications configured.
+- [ ] SNS email subscription confirmation pending in recipient inbox.
 
 ## UI
 
