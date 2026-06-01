@@ -219,6 +219,7 @@ button.danger {
 .results {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: start;
   gap: 14px;
 }
 
@@ -230,6 +231,7 @@ button.danger {
   border-radius: 8px;
   padding: 12px;
   background: #fbfdfb;
+  align-self: start;
 }
 
 .result.error {
@@ -344,6 +346,14 @@ button.copy:hover {
 
 .url-block code.collapsed {
   display: none;
+}
+
+.url-block code:not(.collapsed) {
+  max-height: 150px;
+  padding: 10px;
+  overflow: auto;
+  border-radius: 8px;
+  background: #f6faf5;
 }
 
 #status {

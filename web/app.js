@@ -257,7 +257,14 @@ function tagsBlock(tags) {
   for (const [tag, count] of entries) {
     const chip = document.createElement("span");
     chip.className = "tag-chip";
-    chip.innerHTML = `<span>${tag}</span><strong>${count}</strong>`;
+    const name = document.createElement("span");
+    name.textContent = tag;
+    chip.appendChild(name);
+    if (Number(count) > 1) {
+      const badge = document.createElement("strong");
+      badge.textContent = `x${count}`;
+      chip.appendChild(badge);
+    }
     wrapper.appendChild(chip);
   }
   return wrapper;
