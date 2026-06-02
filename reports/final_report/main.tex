@@ -10,6 +10,7 @@
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{hyperref}
+\usepackage{xurl}
 \usepackage{fancyhdr}
 \usepackage[most]{tcolorbox}
 \usepackage{lastpage}
@@ -21,6 +22,7 @@
 \setsansfont{Arial}
 \hypersetup{
   colorlinks=true,
+  breaklinks=true,
   linkcolor=EcoGreen,
   urlcolor=AwsBlue,
   citecolor=EcoGreen
@@ -53,6 +55,14 @@
 
 \newcommand{\asset}[1]{assets/icons/#1}
 \newcommand{\pill}[2]{\tikz[baseline=(x.base)]\node[rounded corners=8pt,fill=#1!12,draw=#1!35,inner xsep=7pt,inner ysep=3pt,text=#1,font=\scriptsize\bfseries] (x) {#2};}
+\newcommand{\coverstep}[4]{%
+  \begin{minipage}{20mm}
+    \centering
+    \includegraphics[width=8.8mm]{\asset{#1}}\\[-1pt]
+    {\scriptsize\bfseries\textcolor{#2}{#3}}\\[-1pt]
+    {\tiny\textcolor{Muted}{#4}}
+  \end{minipage}%
+}
 
 \newtcolorbox{summarybox}[1]{
   enhanced,
@@ -73,27 +83,28 @@
   \fill[EcoGreen] (current page.north west) rectangle ($(current page.north east)+(0,-8.2cm)$);
   \fill[Leaf] ($(current page.north west)+(0,-8.2cm)$) rectangle ($(current page.north east)+(0,-8.45cm)$);
   \fill[SoftLeaf] ($(current page.south west)+(0,3.6cm)$) rectangle (current page.south east);
-  \node[anchor=north west,text=white,align=left,text width=12.0cm] at ($(current page.north west)+(1.65cm,-1.55cm)$) {
+  \node[anchor=north west,text=white,align=left,text width=10.6cm] at ($(current page.north west)+(1.65cm,-1.55cm)$) {
     {\fontsize{31}{35}\selectfont\bfseries Aussie EcoLens}\\[4pt]
     {\fontsize{15}{18}\selectfont Multi-Cloud Serverless\\Wildlife Observation Platform}\\[12pt]
-    \pill{AwsOrange}{AWS Serverless}\quad
-    \pill{GcpBlue}{GCP Model Service}\quad
-    \pill{Leaf}{Course ML Tagging}
+    \pill{AwsOrange}{AWS}\quad
+    \pill{GcpBlue}{GCP Model}\quad
+    \pill{Leaf}{ML Tags}
   };
   \node[anchor=south east,align=right,text=EcoGreen] at ($(current page.south east)+(-1.6cm,1.5cm)$) {
     {\Large\bfseries FIT5225 2026 S1 Assignment 2}\\[3pt]
     {\normalsize Team Report Draft for Final Submission}\\[8pt]
     {\small Repository: \href{https://github.com/ada-yq225/AussieEcoLens}{github.com/ada-yq225/AussieEcoLens}}
   };
-  \node[anchor=north east] at ($(current page.north east)+(-1.35cm,-1.25cm)$) {
+  \node[anchor=north east] at ($(current page.north east)+(-1.25cm,-1.30cm)$) {
     \begin{tikzpicture}[x=1cm,y=1cm]
-      \node[draw=white,rounded corners=8pt,very thick,fill=white,minimum width=6.15cm,minimum height=4.45cm,drop shadow] (card) {};
-      \node at ($(card.center)+(-1.75,0.8)$) {\includegraphics[width=0.86cm]{\asset{aws_lambda.png}}};
-      \node at ($(card.center)+(-0.30,0.8)$) {\includegraphics[width=0.86cm]{\asset{aws_s3.png}}};
-      \node at ($(card.center)+(1.15,0.8)$) {\includegraphics[width=0.86cm]{\asset{gcp_cloud_run.png}}};
-      \draw[-{Latex[length=2.2mm]},line width=1pt,Leaf] ($(card.center)+(-1.25,0.8)$) -- ($(card.center)+(-0.78,0.8)$);
-      \draw[-{Latex[length=2.2mm]},line width=1pt,GcpBlue] ($(card.center)+(0.20,0.8)$) -- ($(card.center)+(0.68,0.8)$);
-      \node[align=center,text=EcoGreen,font=\bfseries\small] at ($(card.center)+(0,-0.72)$) {Upload \quad Detect\\Mirror \quad Notify};
+      \node[draw=white,rounded corners=8pt,very thick,fill=white,minimum width=7.15cm,minimum height=4.15cm,drop shadow] (card) {};
+      \node[anchor=north west,align=left,text=EcoGreen,font=\bfseries\small] at ($(card.north west)+(0.38,-0.35)$) {Serverless workflow};
+      \node[anchor=west] (a) at ($(card.west)+(0.48,0.10)$) {\coverstep{aws_lambda.png}{AwsOrange}{Upload}{AWS Lambda}};
+      \node[anchor=west] (b) at ($(card.west)+(2.72,0.10)$) {\coverstep{gcp_cloud_run.png}{GcpBlue}{Detect}{Cloud Run}};
+      \node[anchor=west] (c) at ($(card.west)+(4.96,0.10)$) {\coverstep{aws_sns.png}{Leaf}{Notify}{SNS email}};
+      \draw[-{Latex[length=2mm]},line width=0.9pt,Leaf!80] ($(card.west)+(2.30,0.55)$) -- ($(card.west)+(2.72,0.55)$);
+      \draw[-{Latex[length=2mm]},line width=0.9pt,GcpBlue!85] ($(card.west)+(4.54,0.55)$) -- ($(card.west)+(4.96,0.55)$);
+      \node[anchor=south,draw=Leaf!35,fill=SoftLeaf,rounded corners=5pt,inner xsep=7pt,inner ysep=3pt,text=EcoGreen,font=\scriptsize\bfseries] at ($(card.south)+(0,0.34)$) {Searchable wildlife records};
     \end{tikzpicture}
   };
 \end{tikzpicture}
@@ -123,39 +134,41 @@ Cloud smoke testing confirmed unauthenticated API rejection, image upload with \
 
 \newpage
 \begin{landscape}
+\thispagestyle{empty}
 \section*{2. Multi-Cloud Architecture}
 
 \begin{center}
-\resizebox{0.96\linewidth}{!}{%
+\vspace{-1mm}
+\resizebox{0.94\linewidth}{!}{%
 \begin{tikzpicture}[
-  node distance=9mm and 10mm,
-  service/.style={draw=#1!65,fill=white,rounded corners=2.2mm,line width=0.75pt,minimum width=35mm,minimum height=20mm,align=center,font=\small\sffamily,drop shadow={shadow xshift=0.45mm,shadow yshift=-0.45mm,opacity=.12}},
+  node distance=7mm and 8mm,
+  service/.style={draw=#1!65,fill=white,rounded corners=2.1mm,line width=0.72pt,minimum width=32mm,minimum height=17mm,align=center,font=\scriptsize\sffamily,drop shadow={shadow xshift=0.35mm,shadow yshift=-0.35mm,opacity=.10}},
   aws/.style={service=AwsOrange},
   gcp/.style={service=GcpBlue},
-  external/.style={draw=Leaf!50,fill=SoftLeaf,rounded corners=2.2mm,line width=0.75pt,minimum width=35mm,minimum height=18mm,align=center,font=\small\sffamily},
-  arrow/.style={-{Latex[length=2.3mm]},line width=0.78pt,draw=Ink!70},
-  data/.style={-{Latex[length=2.3mm]},line width=0.78pt,draw=GcpBlue!85},
-  note/.style={font=\scriptsize\sffamily,text=Muted,align=center}
+  external/.style={draw=Leaf!50,fill=SoftLeaf,rounded corners=2.1mm,line width=0.72pt,minimum width=31mm,minimum height=16mm,align=center,font=\scriptsize\sffamily},
+  arrow/.style={-{Latex[length=2mm]},line width=0.68pt,draw=Ink!70},
+  data/.style={-{Latex[length=2mm]},line width=0.68pt,draw=GcpBlue!85},
+  note/.style={font=\tiny\sffamily,text=Muted,align=center}
 ]
-  \node[external,minimum width=34mm] (user) {Browser UI\\JWT session};
-  \node[aws,right=of user] (cognito) {\includegraphics[width=7mm]{\asset{aws_cognito.png}}\\Amazon Cognito};
-  \node[aws,right=of cognito] (api) {\includegraphics[width=7mm]{\asset{aws_apigateway.png}}\\API Gateway};
-  \node[aws,right=of api] (lambda) {\includegraphics[width=7mm]{\asset{aws_lambda.png}}\\AWS Lambda};
+  \node[external,minimum width=30mm] (user) {Browser UI\\JWT session};
+  \node[aws,right=9mm of user] (cognito) {\includegraphics[width=6mm]{\asset{aws_cognito.png}}\\Amazon Cognito};
+  \node[aws,right=9mm of cognito] (api) {\includegraphics[width=6mm]{\asset{aws_apigateway.png}}\\API Gateway};
+  \node[aws,right=9mm of api] (lambda) {\includegraphics[width=6mm]{\asset{aws_lambda.png}}\\AWS Lambda};
 
-  \node[aws,below left=14mm and -4mm of lambda] (s3) {\includegraphics[width=7mm]{\asset{aws_s3.png}}\\S3 originals};
-  \node[aws,below=14mm of lambda] (thumb) {\includegraphics[width=7mm]{\asset{aws_s3.png}}\\S3 thumbnails\\and frames};
-  \node[aws,below right=14mm and -4mm of lambda] (ddb) {\includegraphics[width=7mm]{\asset{aws_dynamodb.png}}\\DynamoDB\\metadata};
-  \node[aws,above right=12mm and -2mm of lambda] (sns) {\includegraphics[width=7mm]{\asset{aws_sns.png}}\\SNS topic};
-  \node[external,right=of sns] (smtp) {SMTP email\\Gmail App Password};
+  \node[aws,below left=13mm and -2mm of lambda] (s3) {\includegraphics[width=6mm]{\asset{aws_s3.png}}\\S3 originals};
+  \node[aws,below=13mm of lambda] (thumb) {\includegraphics[width=6mm]{\asset{aws_s3.png}}\\S3 thumbnails\\and frames};
+  \node[aws,below right=13mm and -2mm of lambda] (ddb) {\includegraphics[width=6mm]{\asset{aws_dynamodb.png}}\\DynamoDB\\metadata};
+  \node[aws,above=10mm of lambda] (sns) {\includegraphics[width=6mm]{\asset{aws_sns.png}}\\SNS topic};
+  \node[external,above=7mm of sns] (smtp) {SMTP email\\Gmail App Password};
 
-  \node[gcp,right=34mm of lambda] (model) {\includegraphics[width=7mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\model service};
-  \node[gcp,below=13mm of model] (modelbucket) {\includegraphics[width=7mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\model.pt, mdv5a.pt};
-  \node[gcp,right=of model] (mirror) {\includegraphics[width=7mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\mirror endpoint};
-  \node[gcp,below=13mm of mirror] (mirrorbucket) {\includegraphics[width=7mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\metadata JSON};
+  \node[gcp,right=27mm of lambda] (model) {\includegraphics[width=6mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\model service};
+  \node[gcp,below=13mm of model] (modelbucket) {\includegraphics[width=6mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\model.pt, mdv5a.pt};
+  \node[gcp,right=13mm of model] (mirror) {\includegraphics[width=6mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\mirror endpoint};
+  \node[gcp,below=13mm of mirror] (mirrorbucket) {\includegraphics[width=6mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\metadata JSON};
 
   \begin{pgfonlayer}{background}
-    \node[draw=AwsOrange!45,fill=AwsOrange!5,rounded corners=3mm,fit=(cognito)(api)(lambda)(s3)(thumb)(ddb)(sns),inner sep=5mm,label={[font=\normalsize\bfseries,text=AwsBlue,yshift=1mm]north:AWS application layer}] {};
-    \node[draw=GcpBlue!45,fill=GcpBlue!5,rounded corners=3mm,fit=(model)(modelbucket)(mirror)(mirrorbucket),inner sep=5mm,label={[font=\normalsize\bfseries,text=GcpBlue,yshift=1mm]north:Google Cloud ML and mirror layer}] {};
+    \node[draw=AwsOrange!45,fill=AwsOrange!5,rounded corners=3mm,fit=(cognito)(api)(lambda)(s3)(thumb)(ddb)(sns),inner xsep=6mm,inner ysep=8mm,label={[font=\small\bfseries,text=AwsBlue,anchor=south west,xshift=6mm,yshift=1mm]north west:AWS application layer}] {};
+    \node[draw=GcpBlue!45,fill=GcpBlue!5,rounded corners=3mm,fit=(model)(modelbucket)(mirror)(mirrorbucket),inner xsep=5mm,inner ysep=8mm,label={[font=\small\bfseries,text=GcpBlue,anchor=south west,xshift=5mm,yshift=1mm]north west:Google Cloud ML and mirror layer}] {};
   \end{pgfonlayer}
 
   \draw[arrow] (user) -- node[note,above]{sign in} (cognito);
@@ -164,7 +177,7 @@ Cloud smoke testing confirmed unauthenticated API rejection, image upload with \
   \draw[arrow] (lambda) -- (s3);
   \draw[arrow] (lambda) -- (thumb);
   \draw[arrow] (lambda) -- (ddb);
-  \draw[arrow] (lambda) -- node[note,above]{watched tag} (sns);
+  \draw[arrow] (lambda) -- node[note,right]{watched tag} (sns);
   \draw[arrow] (sns) -- (smtp);
   \draw[data] (lambda) -- node[note,above]{image bytes\\video frames} (model);
   \draw[data] (model) -- (modelbucket);
@@ -174,7 +187,10 @@ Cloud smoke testing confirmed unauthenticated API rejection, image upload with \
 }
 \end{center}
 
+\vspace{2mm}
+\begin{minipage}{0.94\linewidth}
 \small The diagram uses official AWS Architecture Icons and official Google Cloud product icons. AWS contains the security and application plane: Cognito protects all workflows, API Gateway verifies JWTs, Lambda processes uploads and queries, S3 stores originals and derivatives, DynamoDB stores searchable metadata, and SNS participates in watched-tag notifications. Google Cloud provides the secondary-cloud plane: Cloud Run loads the supplied model files from Cloud Storage, predicts species for images and video frames, and another Cloud Run endpoint mirrors metadata into Cloud Storage.
+\end{minipage}
 \end{landscape}
 \newpage
 
@@ -224,6 +240,8 @@ The system is serverless because the workload is event-driven: uploads, queries,
 \section*{7. Repository and References}
 Private source code repository: \href{https://github.com/ada-yq225/AussieEcoLens}{https://github.com/ada-yq225/AussieEcoLens}. Keep the repository private and share it with the teaching team.
 
-\textbf{Icon sources.} AWS icons were downloaded from the official AWS Architecture Icons page: \href{https://aws.amazon.com/architecture/icons/}{aws.amazon.com/architecture/icons}. Google Cloud icons were downloaded from the official Google Cloud product icons library: \href{https://cloud.google.com/icons}{cloud.google.com/icons}.
+\textbf{Icon sources.} AWS icons were downloaded from the official AWS Architecture Icons page:
+\url{https://aws.amazon.com/architecture/icons/}. Google Cloud icons were downloaded from the official Google Cloud product icons library:
+\url{https://cloud.google.com/icons}.
 
 \end{document}
