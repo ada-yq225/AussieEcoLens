@@ -10,6 +10,7 @@ GCP_REGION="${GCP_REGION:-australia-southeast1}"
 MODEL_BUCKET="${MODEL_BUCKET:?Set MODEL_BUCKET}"
 MODEL_SHARED_SECRET="${MODEL_SHARED_SECRET:?Set MODEL_SHARED_SECRET}"
 MODEL_SOURCE_DIR="${MODEL_SOURCE_DIR:-/Users/yq225/Downloads/作业资料/AussieEcoLense}"
+MODEL_MIN_INSTANCES="${MODEL_MIN_INSTANCES:-0}"
 
 gcloud config set project "$GCP_PROJECT_ID"
 gcloud storage buckets create "gs://$MODEL_BUCKET" --location="$GCP_REGION" || true
@@ -27,6 +28,7 @@ gcloud run deploy aussie-ecolens-model \
   --memory=8Gi \
   --cpu=4 \
   --timeout=900 \
+  --min-instances="$MODEL_MIN_INSTANCES" \
   --set-env-vars="MODEL_BUCKET=$MODEL_BUCKET,MODEL_SHARED_SECRET=$MODEL_SHARED_SECRET"
 
 gcloud run services describe aussie-ecolens-model \

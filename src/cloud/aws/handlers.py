@@ -8,11 +8,13 @@ import json
 import mimetypes
 import os
 import re
+import smtplib
 import subprocess
 import time
 import urllib.parse
 import urllib.request
 from decimal import Decimal
+from email.message import EmailMessage
 from typing import Any, Dict, Iterable, Optional, Tuple
 
 import boto3
@@ -35,6 +37,13 @@ MODEL_INFERENCE_ENDPOINT = os.environ.get("MODEL_INFERENCE_ENDPOINT", "")
 MODEL_SHARED_SECRET = os.environ.get("MODEL_SHARED_SECRET", "")
 MODEL_TIMEOUT_SECONDS = int(os.environ.get("MODEL_TIMEOUT_SECONDS", "50"))
 FFMPEG_PATH = os.environ.get("FFMPEG_PATH", "/opt/bin/ffmpeg")
+EMAIL_NOTIFICATION_MODE = os.environ.get("EMAIL_NOTIFICATION_MODE", "sns").lower()
+SMTP_HOST = os.environ.get("SMTP_HOST", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USERNAME)
+SMTP_STARTTLS = os.environ.get("SMTP_STARTTLS", "true").lower() != "false"
 SPECIES = {
     "koala",
     "wombat",
@@ -83,8 +92,16 @@ def response(status: int, payload: Dict[str, Any]) -> Dict[str, Any]:
             "access-control-allow-headers": "authorization,content-type",
             "access-control-allow-methods": "GET,POST,OPTIONS",
         },
-        "body": json.dumps(payload),
+        "body": json.dumps(payload, default=json_default),
     }
+
+
+def json_default(value: Any) -> Any:
+    if isinstance(value, Decimal):
+        if value % 1 == 0:
+            return int(value)
+        return float(value)
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
 def user_id(event: Dict[str, Any]) -> str:
@@ -406,6 +423,23 @@ def mirror_to_gcp(media_item: Dict[str, Any]) -> None:
         res.read()
 
 
+def send_smtp_email(recipient: str, subject: str, body: str) -> bool:
+    if not SMTP_HOST or not SMTP_FROM or not recipient:
+        return False
+    message = EmailMessage()
+    message["From"] = SMTP_FROM
+    message["To"] = recipient
+    message["Subject"] = subject
+    message.set_content(body)
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as client:
+        if SMTP_STARTTLS:
+            client.starttls()
+        if SMTP_USERNAME or SMTP_PASSWORD:
+            client.login(SMTP_USERNAME, SMTP_PASSWORD)
+        client.send_message(message)
+    return True
+
+
 def notify_watchers(tags: Iterable[str], media_item: Dict[str, Any]) -> None:
     tbl = table()
     for tag in tags:
@@ -415,13 +449,34 @@ def notify_watchers(tags: Iterable[str], media_item: Dict[str, Any]) -> None:
             ExpressionAttributeValues={":kind": "WATCH", ":tag": tag},
         )
         for watcher in scan.get("Items", []):
+            subject = f"Aussie EcoLens tag matched: {tag}"
             message = {
                 "email": watcher["email"],
                 "tag": tag,
                 "filename": media_item["filename"],
                 "checksum": media_item["checksum"],
             }
-            sns.publish(TopicArn=SNS_TOPIC_ARN, Subject=f"Aussie EcoLens tag matched: {tag}", Message=json.dumps(message))
+            body = (
+                f"A watched tag matched in Aussie EcoLens.\n\n"
+                f"Tag: {tag}\n"
+                f"Filename: {media_item['filename']}\n"
+                f"Checksum: {media_item['checksum']}\n"
+                f"Media type: {media_item.get('media_type', 'unknown')}\n"
+                f"Storage: {canonical_url(MEDIA_BUCKET, media_item['original_key'])}\n"
+            )
+            channels = ["in_app"]
+            if EMAIL_NOTIFICATION_MODE in {"sns", "both"}:
+                try:
+                    sns.publish(TopicArn=SNS_TOPIC_ARN, Subject=subject, Message=json.dumps(message))
+                    channels.append("sns")
+                except Exception as exc:
+                    print(f"SNS notification failed for {watcher['email']}: {exc}")
+            if EMAIL_NOTIFICATION_MODE in {"smtp", "both"}:
+                try:
+                    if send_smtp_email(watcher["email"], subject, body):
+                        channels.append("smtp")
+                except Exception as exc:
+                    print(f"SMTP notification failed for {watcher['email']}: {exc}")
             tbl.put_item(
                 Item={
                     "pk": f"NOTE#{watcher['user_id']}#{int(time.time() * 1000)}",
@@ -431,6 +486,7 @@ def notify_watchers(tags: Iterable[str], media_item: Dict[str, Any]) -> None:
                     "tag": tag,
                     "media_checksum": media_item["checksum"],
                     "message": f"New or updated media matched watched tag: {tag}",
+                    "channels": channels,
                     "created_at": now_ts(),
                 }
             )

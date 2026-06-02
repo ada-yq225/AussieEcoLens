@@ -223,7 +223,38 @@ Expected JSON fields include:
 }
 ```
 
-## 12. Correct Final State
+## 12. Notifications
+
+In `Watch tags`, enter:
+
+```text
+casuarius_casuarius
+```
+
+Then enter an email address and click `Watch`.
+
+Expected result:
+
+- The status shows `Watch list updated`.
+- Uploading a matching image or video creates a notification record.
+- Calling `/api/notifications` returns at least one notification for the watched tag.
+- In-app notifications work without external email confirmation.
+
+SNS email is configured, but the recipient must confirm the SNS subscription email before AWS can deliver messages to the inbox. If SNS confirmation is unavailable, the project supports an SMTP alternative through deployment variables:
+
+```text
+EMAIL_NOTIFICATION_MODE=smtp
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=...
+SMTP_PASSWORD=...
+SMTP_FROM=...
+SMTP_STARTTLS=true
+```
+
+Use a provider-specific app password, not a normal personal email password.
+
+## 13. Correct Final State
 
 The full project is working when:
 
@@ -238,3 +269,4 @@ The full project is working when:
 - Delete removes media from query results.
 - Video upload returns extracted frame URLs and model-derived frame tags.
 - GCP mirror bucket contains metadata JSON created from AWS uploads.
+- Watched-tag notifications appear through the in-app notification API; email delivery uses SNS confirmation or the SMTP alternative.

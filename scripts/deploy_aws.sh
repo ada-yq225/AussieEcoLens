@@ -12,6 +12,13 @@ GCP_MIRROR_ENDPOINT="${GCP_MIRROR_ENDPOINT:-}"
 GCP_SHARED_SECRET="${GCP_SHARED_SECRET:-}"
 MODEL_INFERENCE_ENDPOINT="${MODEL_INFERENCE_ENDPOINT:-}"
 MODEL_SHARED_SECRET="${MODEL_SHARED_SECRET:-}"
+EMAIL_NOTIFICATION_MODE="${EMAIL_NOTIFICATION_MODE:-sns}"
+SMTP_HOST="${SMTP_HOST:-}"
+SMTP_PORT="${SMTP_PORT:-587}"
+SMTP_USERNAME="${SMTP_USERNAME:-}"
+SMTP_PASSWORD="${SMTP_PASSWORD:-}"
+SMTP_FROM="${SMTP_FROM:-}"
+SMTP_STARTTLS="${SMTP_STARTTLS:-true}"
 FFMPEG_LAYER_ARN="${FFMPEG_LAYER_ARN:-}"
 
 sam build --template-file infra/aws/template.yaml
@@ -21,6 +28,9 @@ PARAM_OVERRIDES=(
   AppCallbackUrl="$APP_URL"
   AppLogoutUrl="$APP_URL"
   TaggerMode="$TAGGER_MODE"
+  EmailNotificationMode="$EMAIL_NOTIFICATION_MODE"
+  SmtpPort="$SMTP_PORT"
+  SmtpStartTls="$SMTP_STARTTLS"
 )
 
 if [[ -n "$NOTIFICATION_EMAIL" ]]; then
@@ -37,6 +47,18 @@ if [[ -n "$MODEL_INFERENCE_ENDPOINT" ]]; then
 fi
 if [[ -n "$MODEL_SHARED_SECRET" ]]; then
   PARAM_OVERRIDES+=(ModelSharedSecret="$MODEL_SHARED_SECRET")
+fi
+if [[ -n "$SMTP_HOST" ]]; then
+  PARAM_OVERRIDES+=(SmtpHost="$SMTP_HOST")
+fi
+if [[ -n "$SMTP_USERNAME" ]]; then
+  PARAM_OVERRIDES+=(SmtpUsername="$SMTP_USERNAME")
+fi
+if [[ -n "$SMTP_PASSWORD" ]]; then
+  PARAM_OVERRIDES+=(SmtpPassword="$SMTP_PASSWORD")
+fi
+if [[ -n "$SMTP_FROM" ]]; then
+  PARAM_OVERRIDES+=(SmtpFrom="$SMTP_FROM")
 fi
 if [[ -n "$FFMPEG_LAYER_ARN" ]]; then
   PARAM_OVERRIDES+=(FFmpegLayerArn="$FFMPEG_LAYER_ARN")

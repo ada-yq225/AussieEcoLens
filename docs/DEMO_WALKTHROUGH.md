@@ -29,6 +29,7 @@ This document is the working demo guide for the final assignment demonstration.
 - Cloud Run model service: `aussie-ecolens-model`
 - Model service URL: `https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app`
 - Model bucket: `gs://aussie-ecolens-raywu361-models`
+- Demo stability setting: Cloud Run model service `min-instances=1`
 
 ## Local UI
 
@@ -207,13 +208,19 @@ GCP object:
 gs://aussie-ecolens-raywu361-mirror/media-metadata/7a97e0bb6c81620aa84244d4b543c815ab7930e00220ad28129a20b778f9e70b.json
 ```
 
-## Pending Manual Action
+### Notification Verification
 
-SNS email subscription is created but still pending recipient confirmation:
+Watched-tag records and in-app notification records were verified in DynamoDB and through `/api/notifications`:
 
-```text
-Endpoint: configured recipient email
-Status: PendingConfirmation
+```json
+{
+  "status": 200,
+  "notification_count": 2,
+  "latest": {
+    "channels": ["in_app", "sns"],
+    "tag": "casuarius_casuarius"
+  }
+}
 ```
 
-Open the AWS SNS confirmation email and click `Confirm subscription`. After that, tag notifications can send real emails.
+SNS email delivery still requires the recipient to confirm the AWS SNS subscription email. As a deployable alternative, the Lambda notification path now supports SMTP with `EMAIL_NOTIFICATION_MODE=smtp` or `both` plus `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, and `SMTP_FROM`.

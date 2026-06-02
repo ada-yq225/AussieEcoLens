@@ -36,6 +36,36 @@ Parameters:
     Type: String
     Default: ''
     NoEcho: true
+  EmailNotificationMode:
+    Type: String
+    Default: sns
+    AllowedValues:
+      - sns
+      - smtp
+      - both
+      - none
+  SmtpHost:
+    Type: String
+    Default: ''
+  SmtpPort:
+    Type: Number
+    Default: 587
+  SmtpUsername:
+    Type: String
+    Default: ''
+  SmtpPassword:
+    Type: String
+    Default: ''
+    NoEcho: true
+  SmtpFrom:
+    Type: String
+    Default: ''
+  SmtpStartTls:
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
   FFmpegLayerArn:
     Type: String
     Default: ''
@@ -64,6 +94,13 @@ Globals:
         MODEL_SHARED_SECRET: !Ref ModelSharedSecret
         MODEL_TIMEOUT_SECONDS: 50
         FFMPEG_PATH: /opt/bin/ffmpeg
+        EMAIL_NOTIFICATION_MODE: !Ref EmailNotificationMode
+        SMTP_HOST: !Ref SmtpHost
+        SMTP_PORT: !Ref SmtpPort
+        SMTP_USERNAME: !Ref SmtpUsername
+        SMTP_PASSWORD: !Ref SmtpPassword
+        SMTP_FROM: !Ref SmtpFrom
+        SMTP_STARTTLS: !Ref SmtpStartTls
 
 Resources:
   UserPool:
