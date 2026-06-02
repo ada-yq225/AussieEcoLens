@@ -15,7 +15,7 @@ Required services:
 - API Gateway
 - DynamoDB
 - SNS
-- Optional Rekognition
+- Optional SMTP provider for email notifications
 
 Install/login requirements:
 
@@ -33,7 +33,8 @@ If the AWS Academy environment does not support SSO, use the credentials flow pr
 Required services:
 
 - Cloud Storage
-- Cloud Functions gen2 or Cloud Run functions
+- Cloud Run model service
+- Cloud Run function for metadata mirroring
 
 Install/login requirements:
 
@@ -51,7 +52,30 @@ aussie-ecolens-raywu361
 
 ## Deployment Order
 
-Deploy GCP first so AWS can call the GCP mirror endpoint.
+Deploy GCP first so AWS can call the model service and the mirror endpoint.
+
+### 1. Deploy The GCP Model Service
+
+```bash
+export GCP_PROJECT_ID=aussie-ecolens-raywu361
+export GCP_REGION=australia-southeast1
+export MODEL_BUCKET=aussie-ecolens-raywu361-models
+export MODEL_SHARED_SECRET=choose-a-long-random-secret
+export MODEL_MIN_INSTANCES=1
+export CLASSIFIER_BLOB=course-model/model.pt
+export DETECTOR_BLOB=course-model/mdv5a.pt
+scripts/deploy_model_service.sh
+```
+
+The script uploads the supplied model files to GCP Cloud Storage if they are not already present, then deploys the Cloud Run model service. To switch to a newer model version, upload the new files to GCP Storage and change `CLASSIFIER_BLOB` or `DETECTOR_BLOB`; no source-code change is required.
+
+Current deployed GCP model endpoint:
+
+```text
+https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app
+```
+
+### 2. Deploy The GCP Mirror Function
 
 ```bash
 export GCP_PROJECT_ID=YOUR_PROJECT_ID
@@ -69,25 +93,33 @@ Current deployed GCP endpoint:
 https://aussie-ecolens-mirror-hzmou43rsa-ts.a.run.app
 ```
 
+### 3. Deploy AWS
+
 ```bash
 export STACK_NAME=aussie-ecolens
 export AWS_REGION=ap-southeast-2
 export APP_URL=http://127.0.0.1:8080/
 export NOTIFICATION_EMAIL=YOUR_EMAIL
-export TAGGER_MODE=filename
+export TAGGER_MODE=course_model
 export GCP_MIRROR_ENDPOINT=THE_GCP_FUNCTION_URL
 export GCP_SHARED_SECRET=the-same-secret
+export MODEL_INFERENCE_ENDPOINT=https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app
+export MODEL_SHARED_SECRET=the-model-secret
+export EMAIL_NOTIFICATION_MODE=both
+export SMTP_HOST=smtp.gmail.com
+export SMTP_PORT=587
+export SMTP_USERNAME=YOUR_SMTP_SENDER
+export SMTP_PASSWORD=YOUR_APP_PASSWORD
+export SMTP_FROM=YOUR_SMTP_SENDER
 export FFMPEG_LAYER_ARN=arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1
 scripts/deploy_aws.sh
 ```
 
-Use `TAGGER_MODE=rekognition` only after you confirm that your AWS account has Rekognition access and you accept possible service cost.
-
-Set `FFMPEG_LAYER_ARN` to a Lambda layer that contains `/opt/bin/ffmpeg` for final video compliance.
+`SMTP_PASSWORD` may contain Gmail's visual grouping spaces; `scripts/deploy_aws.sh` removes whitespace before deploying.
 
 ## After AWS Deploy
 
-1. Confirm the SNS subscription email.
+1. Confirm the SNS subscription email if you want SNS email delivery.
 2. Start the local UI:
 
 ```bash
@@ -104,6 +136,7 @@ The current deployable cloud code supports:
 
 - `filename`: deterministic demo tagger for controlled demo files.
 - `rekognition`: AWS Rekognition DetectLabels.
+- `course_model`: final mode. AWS Lambda calls the GCP Cloud Run model service using the supplied MegaDetector and classifier.
 
 The teaching material in `/Users/yq225/Downloads/作业资料/AussieEcoLense.zip` supplies:
 
@@ -121,13 +154,7 @@ python3.12 scripts/course_model_predict.py /Users/yq225/Downloads/作业资料/t
   --detector /Users/yq225/Downloads/作业资料/AussieEcoLense/mdv5a.pt
 ```
 
-For AWS Lambda, the supplied model package is too large for the simple zip-based Lambda path. Use one of these final-deployment options:
-
-- Lambda container image with torch, megadetector, `mdv5a.pt`, and `model.pt`.
-- EFS-mounted model files with a Lambda function configured for EFS.
-- A secondary serverless container endpoint such as Cloud Run for model inference.
-
-The current SAM template remains deployable with `TAGGER_MODE=filename` or `TAGGER_MODE=rekognition`.
+The final deployment uses the Cloud Run option because the supplied model package is too large for a simple zip-based Lambda function. AWS Lambda stays small and serverless, while the model container runs in GCP with Python 3.12, PyTorch, torchvision, MegaDetector, and onnx2torch installed.
 
 ## Security Controls
 
@@ -138,7 +165,7 @@ The current SAM template remains deployable with `TAGGER_MODE=filename` or `TAGG
 
 ## Video Processing
 
-For final video compliance, set `FFMPEG_LAYER_ARN` to a Lambda layer that contains `/opt/bin/ffmpeg`.
+For final video compliance, `FFMPEG_LAYER_ARN` is set to a Lambda layer that contains `/opt/bin/ffmpeg`.
 
 When configured, video uploads are processed as follows:
 
@@ -165,8 +192,9 @@ The current AWS deployment uses the public ffmpeg layer:
 arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1
 ```
 
-## Important Limitations To Resolve Before Submission
+## Final Notes
 
 - Cloud deployment still requires AWS/GCP login and CLI tools on the machine.
-- Set `FFMPEG_LAYER_ARN` to an ffmpeg Lambda layer ARN before the final cloud demo.
-- Replace `APP_URL=http://127.0.0.1:8080/` with the final hosted UI URL if you deploy the frontend publicly.
+- Keep the GCP Cloud Run model service at `min-instances=1` for the live demo to avoid cold-start timeouts.
+- Set the model service back to `min-instances=0` after marking to reduce cost.
+- Replace `APP_URL=http://127.0.0.1:8080/` with the hosted frontend URL if you deploy the frontend publicly.

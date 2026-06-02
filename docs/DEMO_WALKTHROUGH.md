@@ -215,12 +215,12 @@ Watched-tag records and in-app notification records were verified in DynamoDB an
 ```json
 {
   "status": 200,
-  "notification_count": 2,
+  "notification_count": 1,
   "latest": {
-    "channels": ["in_app", "sns"],
+    "channels": ["in_app", "sns", "smtp"],
     "tag": "casuarius_casuarius"
   }
 }
 ```
 
-SNS email delivery still requires the recipient to confirm the AWS SNS subscription email. As a deployable alternative, the Lambda notification path now supports SMTP with `EMAIL_NOTIFICATION_MODE=smtp` or `both` plus `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, and `SMTP_FROM`.
+The final deployment uses `EMAIL_NOTIFICATION_MODE=both`, so the same watched-tag event creates an in-app record, publishes to SNS, and sends SMTP email through a Gmail App Password. The recipient confirmed the SMTP email was received.

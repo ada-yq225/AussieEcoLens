@@ -8,7 +8,7 @@ Briefly describe Aussie EcoLens and its purpose.
 
 ## 2. Multi-Cloud Architecture
 
-Insert an official-icon architecture diagram here.
+Insert the official-icon architecture diagram here. Use `docs/ARCHITECTURE.md` as the source layout and redraw/export it with official AWS and Google Cloud architecture icons for the final PDF.
 
 Suggested components:
 
@@ -20,12 +20,15 @@ Suggested components:
 - AWS SNS
 - GCP Cloud Storage
 - GCP Cloud Functions or Cloud Run
+- External SMTP provider for verified email notifications
 
 ## 3. Design and Implementation Choices
 
 Explain why serverless services were selected, how the upload workflow works, how tags are stored, and how queries are processed.
 
 ## 4. Team Contributions
+
+Fill this table with real team details before submission.
 
 | Name and ID | Contribution % | Project elements contributed |
 | --- | ---: | --- |
@@ -43,5 +46,6 @@ Explain why serverless services were selected, how the upload workflow works, ho
 
 ## 6. Repository
 
-Private repository link: TBD
+Private repository link: `https://github.com/ada-yq225/AussieEcoLens`
 
+Keep the repository private and share it with the teaching team as required.

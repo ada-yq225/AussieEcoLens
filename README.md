@@ -275,12 +275,13 @@ casuarius_casuarius
 3. Click `Watch`.
 4. Upload media that matches the watched tag.
 5. The backend creates a notification record in DynamoDB.
+6. Click `Refresh notifications` in the UI to display the in-app notification.
 
 The latest smoke test verified that notification records are returned from `/api/notifications` with:
 
 ```json
 {
-  "channels": ["in_app", "sns"],
+  "channels": ["in_app", "sns", "smtp"],
   "tag": "casuarius_casuarius"
 }
 ```
@@ -316,7 +317,7 @@ MODEL_SHARED_SECRET='...' \
 scripts/deploy_aws.sh
 ```
 
-Use `EMAIL_NOTIFICATION_MODE=both` to keep SNS and SMTP enabled together. Do not use a normal Gmail password; Gmail requires an App Password for SMTP.
+Use `EMAIL_NOTIFICATION_MODE=both` to keep SNS and SMTP enabled together. Do not use a normal Gmail password; Gmail requires an App Password for SMTP. The deployment script strips spaces from grouped Gmail App Passwords automatically.
 
 ## Cloud Run Cold Start And Demo Stability
 
@@ -343,8 +344,14 @@ GCP_REGION=australia-southeast1 \
 MODEL_BUCKET=aussie-ecolens-raywu361-models \
 MODEL_SHARED_SECRET='...' \
 MODEL_MIN_INSTANCES=1 \
+CLASSIFIER_BLOB=course-model/model.pt \
+DETECTOR_BLOB=course-model/mdv5a.pt \
+DETECTION_THRESHOLD=0.05 \
+PREDICTION_THRESHOLD=0.0 \
 scripts/deploy_model_service.sh
 ```
+
+Changing `CLASSIFIER_BLOB` or `DETECTOR_BLOB` points the model service to a different model object in GCP Cloud Storage without changing application source code.
 
 ## Verified End-To-End Results
 
@@ -392,7 +399,7 @@ Notification retrieval was also verified after fixing DynamoDB Decimal JSON seri
   "status": 200,
   "notification_count": 2,
   "latest": {
-    "channels": ["in_app", "sns"],
+    "channels": ["in_app", "sns", "smtp"],
     "tag": "casuarius_casuarius"
   }
 }
@@ -442,6 +449,8 @@ python3 -m unittest discover -s tests
 ## Additional Documentation
 
 - `README_TESTING.md`: step-by-step assessment test checklist.
+- `docs/REQUIREMENTS_COVERAGE.md`: assignment requirement-to-implementation mapping.
+- `docs/ARCHITECTURE.md`: architecture diagram source and official-icon checklist for the team report.
 - `docs/DEMO_WALKTHROUGH.md`: concise demo script and deployed resource list.
 - `docs/DEPLOYMENT.md`: deployment notes.
 - `docs/ACCEPTANCE_CHECKLIST.md`: requirement coverage checklist.

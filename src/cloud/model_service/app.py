@@ -192,7 +192,16 @@ def check_secret() -> bool:
 
 @app.get("/health")
 def health():
-    return jsonify({"ok": True, "runtime_loaded": runtime is not None})
+    return jsonify(
+        {
+            "ok": True,
+            "runtime_loaded": runtime is not None,
+            "classifier_blob": CLASSIFIER_BLOB,
+            "detector_blob": DETECTOR_BLOB,
+            "detection_threshold": DETECTION_THRESHOLD,
+            "prediction_threshold": PREDICTION_THRESHOLD,
+        }
+    )
 
 
 @app.post("/predict")

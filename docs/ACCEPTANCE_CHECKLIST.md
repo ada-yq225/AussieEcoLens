@@ -17,7 +17,9 @@
 - [x] Cloud event trigger on upload configured for S3 object-created events.
 - [x] Video 1 frame/second extraction implemented and verified in AWS Lambda with `FFMPEG_LAYER_ARN`; extracted frame URLs are stored and returned.
 - [x] Demo tagging and database insertion.
-- [x] Production teaching-provided ML model integrated for local final demo via `LOCAL_TAGGER_MODE=course`.
+- [x] Production teaching-provided ML model integrated locally via `LOCAL_TAGGER_MODE=course`.
+- [x] Production teaching-provided ML model integrated in cloud through GCP Cloud Run and AWS Lambda `TAGGER_MODE=course_model`.
+- [x] Model deployment can switch classifier/detector Cloud Storage blob paths without source-code changes.
 
 ## Queries
 
@@ -32,7 +34,8 @@
 
 - [x] Local notification log for watched tags.
 - [x] AWS SNS email notifications configured.
-- [ ] SNS email subscription confirmation pending in recipient inbox.
+- [x] SMTP email notification alternative configured with Gmail App Password.
+- [x] Watched-tag cloud test verified channels `in_app`, `sns`, and `smtp`; recipient confirmed email was received.
 
 ## Multi-Cloud
 
@@ -48,12 +51,17 @@
 - [x] Query UI with thumbnail previews and full image links.
 - [x] Bulk tag edit and delete UI.
 - [x] Notification watch UI.
+- [x] In-app notification refresh UI.
 
 ## Reports and Demo
 
-- [ ] Official multi-cloud architecture diagram.
-- [ ] Team contribution table.
+- [x] Architecture diagram source and official-icon checklist prepared in `docs/ARCHITECTURE.md`.
+- [ ] Official multi-cloud architecture diagram must be redrawn or exported into the final PDF with official AWS/GCP icons.
+- [x] Team contribution table template prepared in `docs/TEAM_REPORT_OUTLINE.md`.
+- [ ] Team contribution table still needs real names, student IDs, contribution percentages, and member-specific text.
 - [x] User guide and demo walkthrough.
 - [x] Private Git repository link available through pushed GitHub repo.
-- [ ] Individual report.
+- [x] Individual report template prepared in `docs/INDIVIDUAL_REPORT_TEMPLATE.md`.
+- [ ] Individual report still needs each student's own 500-word content.
 - [x] Demo script and Q&A notes.
+- [x] Assignment requirement coverage table prepared in `docs/REQUIREMENTS_COVERAGE.md`.

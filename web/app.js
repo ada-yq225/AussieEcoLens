@@ -369,6 +369,50 @@ function framesBlock(frameUrls) {
   return wrapper;
 }
 
+function renderNotifications(notifications) {
+  const list = $("notifications-list");
+  list.innerHTML = "";
+  if (!notifications.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "No watched-tag notifications yet.";
+    list.appendChild(empty);
+    return;
+  }
+  const sorted = [...notifications].sort((a, b) => Number(b.created_at || 0) - Number(a.created_at || 0));
+  for (const note of sorted) {
+    const item = document.createElement("article");
+    item.className = "notification-item";
+    const title = document.createElement("strong");
+    title.textContent = note.tag || "matched tag";
+    const message = document.createElement("p");
+    message.textContent = note.message || "A watched tag matched new or updated media.";
+    const meta = document.createElement("div");
+    meta.className = "notification-meta";
+    const channels = note.channels || ["in_app"];
+    for (const channel of channels) {
+      const chip = document.createElement("span");
+      chip.className = "channel-chip";
+      chip.textContent = String(channel).replace("_", " ");
+      meta.appendChild(chip);
+    }
+    if (note.email) {
+      const email = document.createElement("span");
+      email.textContent = note.email;
+      meta.appendChild(email);
+    }
+    item.append(title, message, meta);
+    list.appendChild(item);
+  }
+}
+
+async function refreshNotifications() {
+  const data = await api("/api/notifications");
+  const notifications = data.notifications || [];
+  renderNotifications(notifications);
+  setStatus(`Loaded ${notifications.length} notification${notifications.length === 1 ? "" : "s"}`);
+}
+
 async function uploadOne(file) {
   const uploadFile = await prepareUploadFile(file);
   const body = new FormData();
@@ -542,6 +586,14 @@ function wireForms() {
       body: JSON.stringify({ email: form.email, tags: tagsFrom(form.tags) }),
     });
     setStatus(data.ok ? "Watch list updated" : "Watch failed");
+  });
+
+  $("notifications-refresh").addEventListener("click", async () => {
+    try {
+      await refreshNotifications();
+    } catch (error) {
+      setStatus(error.message);
+    }
   });
 }
 

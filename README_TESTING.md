@@ -237,10 +237,13 @@ Expected result:
 
 - The status shows `Watch list updated`.
 - Uploading a matching image or video creates a notification record.
-- Calling `/api/notifications` returns at least one notification for the watched tag.
+- Click `Refresh notifications` in the UI.
+- The Notifications panel shows at least one watched-tag notification.
+- Calling `/api/notifications` also returns at least one notification for the watched tag.
 - In-app notifications work without external email confirmation.
+- In the deployed final configuration, SMTP email has been verified with Gmail App Password and the notification channels include `in_app`, `sns`, and `smtp`.
 
-SNS email is configured, but the recipient must confirm the SNS subscription email before AWS can deliver messages to the inbox. If SNS confirmation is unavailable, the project supports an SMTP alternative through deployment variables:
+SNS email is configured, but the recipient must confirm the SNS subscription email before AWS can deliver messages to the inbox. To avoid depending on SNS confirmation during marking, the deployed project also supports SMTP through deployment variables:
 
 ```text
 EMAIL_NOTIFICATION_MODE=smtp
@@ -269,4 +272,4 @@ The full project is working when:
 - Delete removes media from query results.
 - Video upload returns extracted frame URLs and model-derived frame tags.
 - GCP mirror bucket contains metadata JSON created from AWS uploads.
-- Watched-tag notifications appear through the in-app notification API; email delivery uses SNS confirmation or the SMTP alternative.
+- Watched-tag notifications appear in the UI and through the in-app notification API; SMTP email delivery has been verified.
