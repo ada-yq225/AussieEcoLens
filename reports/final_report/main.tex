@@ -1,0 +1,229 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,margin=16mm,top=17mm,bottom=18mm]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{lastpage}
+\usepackage{pdflscape}
+
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,shadows}
+
+\setmainfont{Arial}
+\setsansfont{Arial}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=EcoGreen,
+  urlcolor=AwsBlue,
+  citecolor=EcoGreen
+}
+
+\definecolor{EcoGreen}{HTML}{123D2A}
+\definecolor{Leaf}{HTML}{247348}
+\definecolor{SoftLeaf}{HTML}{EEF7EF}
+\definecolor{AwsOrange}{HTML}{FF9900}
+\definecolor{AwsBlue}{HTML}{232F3E}
+\definecolor{GcpBlue}{HTML}{4285F4}
+\definecolor{GcpGreen}{HTML}{34A853}
+\definecolor{GcpYellow}{HTML}{FBBC05}
+\definecolor{GcpRed}{HTML}{EA4335}
+\definecolor{Ink}{HTML}{17221B}
+\definecolor{Muted}{HTML}{5D7464}
+\definecolor{Panel}{HTML}{F7FAF6}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textsf{\textcolor{EcoGreen}{Aussie EcoLens}}}
+\rhead{\textsf{\textcolor{Muted}{FIT5225 2026 S1 A2}}}
+\cfoot{\textsf{\thepage/\pageref*{LastPage}}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{SoftLeaf}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlist[itemize]{leftmargin=*,nosep}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\newcommand{\asset}[1]{assets/icons/#1}
+\newcommand{\pill}[2]{\tikz[baseline=(x.base)]\node[rounded corners=8pt,fill=#1!12,draw=#1!35,inner xsep=7pt,inner ysep=3pt,text=#1,font=\scriptsize\bfseries] (x) {#2};}
+
+\newtcolorbox{summarybox}[1]{
+  enhanced,
+  colback=Panel,
+  colframe=Leaf!55,
+  coltitle=EcoGreen,
+  title=\textbf{#1},
+  fonttitle=\sffamily,
+  boxrule=0.7pt,
+  arc=2mm,
+  left=3mm,right=3mm,top=2mm,bottom=2mm
+}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[EcoGreen] (current page.north west) rectangle ($(current page.north east)+(0,-8.2cm)$);
+  \fill[Leaf] ($(current page.north west)+(0,-8.2cm)$) rectangle ($(current page.north east)+(0,-8.45cm)$);
+  \fill[SoftLeaf] ($(current page.south west)+(0,3.6cm)$) rectangle (current page.south east);
+  \node[anchor=north west,text=white,align=left,text width=12.0cm] at ($(current page.north west)+(1.65cm,-1.55cm)$) {
+    {\fontsize{31}{35}\selectfont\bfseries Aussie EcoLens}\\[4pt]
+    {\fontsize{15}{18}\selectfont Multi-Cloud Serverless\\Wildlife Observation Platform}\\[12pt]
+    \pill{AwsOrange}{AWS Serverless}\quad
+    \pill{GcpBlue}{GCP Model Service}\quad
+    \pill{Leaf}{Course ML Tagging}
+  };
+  \node[anchor=south east,align=right,text=EcoGreen] at ($(current page.south east)+(-1.6cm,1.5cm)$) {
+    {\Large\bfseries FIT5225 2026 S1 Assignment 2}\\[3pt]
+    {\normalsize Team Report Draft for Final Submission}\\[8pt]
+    {\small Repository: \href{https://github.com/ada-yq225/AussieEcoLens}{github.com/ada-yq225/AussieEcoLens}}
+  };
+  \node[anchor=north east] at ($(current page.north east)+(-1.35cm,-1.25cm)$) {
+    \begin{tikzpicture}[x=1cm,y=1cm]
+      \node[draw=white,rounded corners=8pt,very thick,fill=white,minimum width=6.15cm,minimum height=4.45cm,drop shadow] (card) {};
+      \node at ($(card.center)+(-1.75,0.8)$) {\includegraphics[width=0.86cm]{\asset{aws_lambda.png}}};
+      \node at ($(card.center)+(-0.30,0.8)$) {\includegraphics[width=0.86cm]{\asset{aws_s3.png}}};
+      \node at ($(card.center)+(1.15,0.8)$) {\includegraphics[width=0.86cm]{\asset{gcp_cloud_run.png}}};
+      \draw[-{Latex[length=2.2mm]},line width=1pt,Leaf] ($(card.center)+(-1.25,0.8)$) -- ($(card.center)+(-0.78,0.8)$);
+      \draw[-{Latex[length=2.2mm]},line width=1pt,GcpBlue] ($(card.center)+(0.20,0.8)$) -- ($(card.center)+(0.68,0.8)$);
+      \node[align=center,text=EcoGreen,font=\bfseries\small] at ($(card.center)+(0,-0.72)$) {Upload \quad Detect\\Mirror \quad Notify};
+    \end{tikzpicture}
+  };
+\end{tikzpicture}
+\vspace*{10.4cm}
+\begin{summarybox}{Submission Note}
+This PDF contains the team report narrative, the multi-cloud architecture diagram, a contribution table template, a user guide, and implementation evidence. Replace the highlighted team-member placeholders with real names, student IDs, and contribution percentages before Moodle submission.
+\end{summarybox}
+\end{titlepage}
+
+\section*{1. Overview}
+Aussie EcoLens is a multi-cloud online media system for wildlife observation data. Authenticated users can upload camera-trap images and short videos, receive automatic species tags from the supplied course machine-learning model, search media by tags or species, retrieve a full image from a thumbnail URL, manually add or remove tags, delete media, and subscribe to watched-tag notifications. The final deployment uses AWS for authentication, API, storage, database, video frame extraction, and notifications, while Google Cloud hosts the ML inference service and mirrored metadata. This split keeps the application serverless while allowing the large PyTorch, MegaDetector, and classifier runtime to run in a suitable container service.
+
+\vspace{5mm}
+\begin{summarybox}{Live Deployment Snapshot}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{31mm}X}
+AWS region & \texttt{ap-southeast-2}: Cognito, API Gateway, Lambda, S3, DynamoDB, SNS\\
+GCP region & \texttt{australia-southeast1}: Cloud Run model service and metadata mirror\\
+ML runtime & Python 3.12, PyTorch, torchvision, MegaDetector, onnx2torch, supplied \texttt{model.pt}\\
+Notification & In-app records, SNS publish path, and verified SMTP email through Gmail App Password\\
+\end{tabularx}
+\end{summarybox}
+
+\vspace{3mm}
+\begin{summarybox}{Verified Evidence}
+Cloud smoke testing confirmed unauthenticated API rejection, image upload with \texttt{casuarius\_casuarius: 1}, duplicate detection, thumbnail-to-full-image lookup, query-by-file without storage, manual tag edit, deletion, video frame extraction at one frame per second, GCP metadata mirroring, and notification channels \texttt{in\_app}, \texttt{sns}, and \texttt{smtp}.
+\end{summarybox}
+
+\newpage
+\begin{landscape}
+\section*{2. Multi-Cloud Architecture}
+
+\begin{center}
+\resizebox{0.96\linewidth}{!}{%
+\begin{tikzpicture}[
+  node distance=9mm and 10mm,
+  service/.style={draw=#1!65,fill=white,rounded corners=2.2mm,line width=0.75pt,minimum width=35mm,minimum height=20mm,align=center,font=\small\sffamily,drop shadow={shadow xshift=0.45mm,shadow yshift=-0.45mm,opacity=.12}},
+  aws/.style={service=AwsOrange},
+  gcp/.style={service=GcpBlue},
+  external/.style={draw=Leaf!50,fill=SoftLeaf,rounded corners=2.2mm,line width=0.75pt,minimum width=35mm,minimum height=18mm,align=center,font=\small\sffamily},
+  arrow/.style={-{Latex[length=2.3mm]},line width=0.78pt,draw=Ink!70},
+  data/.style={-{Latex[length=2.3mm]},line width=0.78pt,draw=GcpBlue!85},
+  note/.style={font=\scriptsize\sffamily,text=Muted,align=center}
+]
+  \node[external,minimum width=34mm] (user) {Browser UI\\JWT session};
+  \node[aws,right=of user] (cognito) {\includegraphics[width=7mm]{\asset{aws_cognito.png}}\\Amazon Cognito};
+  \node[aws,right=of cognito] (api) {\includegraphics[width=7mm]{\asset{aws_apigateway.png}}\\API Gateway};
+  \node[aws,right=of api] (lambda) {\includegraphics[width=7mm]{\asset{aws_lambda.png}}\\AWS Lambda};
+
+  \node[aws,below left=14mm and -4mm of lambda] (s3) {\includegraphics[width=7mm]{\asset{aws_s3.png}}\\S3 originals};
+  \node[aws,below=14mm of lambda] (thumb) {\includegraphics[width=7mm]{\asset{aws_s3.png}}\\S3 thumbnails\\and frames};
+  \node[aws,below right=14mm and -4mm of lambda] (ddb) {\includegraphics[width=7mm]{\asset{aws_dynamodb.png}}\\DynamoDB\\metadata};
+  \node[aws,above right=12mm and -2mm of lambda] (sns) {\includegraphics[width=7mm]{\asset{aws_sns.png}}\\SNS topic};
+  \node[external,right=of sns] (smtp) {SMTP email\\Gmail App Password};
+
+  \node[gcp,right=34mm of lambda] (model) {\includegraphics[width=7mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\model service};
+  \node[gcp,below=13mm of model] (modelbucket) {\includegraphics[width=7mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\model.pt, mdv5a.pt};
+  \node[gcp,right=of model] (mirror) {\includegraphics[width=7mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\mirror endpoint};
+  \node[gcp,below=13mm of mirror] (mirrorbucket) {\includegraphics[width=7mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\metadata JSON};
+
+  \begin{pgfonlayer}{background}
+    \node[draw=AwsOrange!45,fill=AwsOrange!5,rounded corners=3mm,fit=(cognito)(api)(lambda)(s3)(thumb)(ddb)(sns),inner sep=5mm,label={[font=\normalsize\bfseries,text=AwsBlue,yshift=1mm]north:AWS application layer}] {};
+    \node[draw=GcpBlue!45,fill=GcpBlue!5,rounded corners=3mm,fit=(model)(modelbucket)(mirror)(mirrorbucket),inner sep=5mm,label={[font=\normalsize\bfseries,text=GcpBlue,yshift=1mm]north:Google Cloud ML and mirror layer}] {};
+  \end{pgfonlayer}
+
+  \draw[arrow] (user) -- node[note,above]{sign in} (cognito);
+  \draw[arrow] (cognito) -- node[note,above]{ID token} (api);
+  \draw[arrow] (api) -- node[note,above]{authorised /api/*} (lambda);
+  \draw[arrow] (lambda) -- (s3);
+  \draw[arrow] (lambda) -- (thumb);
+  \draw[arrow] (lambda) -- (ddb);
+  \draw[arrow] (lambda) -- node[note,above]{watched tag} (sns);
+  \draw[arrow] (sns) -- (smtp);
+  \draw[data] (lambda) -- node[note,above]{image bytes\\video frames} (model);
+  \draw[data] (model) -- (modelbucket);
+  \draw[data] (lambda) -- node[note,above]{signed metadata} (mirror);
+  \draw[data] (mirror) -- (mirrorbucket);
+\end{tikzpicture}
+}
+\end{center}
+
+\small The diagram uses official AWS Architecture Icons and official Google Cloud product icons. AWS contains the security and application plane: Cognito protects all workflows, API Gateway verifies JWTs, Lambda processes uploads and queries, S3 stores originals and derivatives, DynamoDB stores searchable metadata, and SNS participates in watched-tag notifications. Google Cloud provides the secondary-cloud plane: Cloud Run loads the supplied model files from Cloud Storage, predicts species for images and video frames, and another Cloud Run endpoint mirrors metadata into Cloud Storage.
+\end{landscape}
+\newpage
+
+\section*{3. Design and Implementation Choices}
+The system is serverless because the workload is event-driven: uploads, queries, tag edits, deletes, and notification watches happen intermittently and should scale without managing virtual machines. Deduplication uses a SHA-256 checksum, so repeated uploads return existing metadata instead of wasting storage. Images receive compressed thumbnails with preserved aspect ratio. Videos are sampled at one frame per second with ffmpeg; each extracted frame is submitted to the same model service and the predictions are aggregated as tag counts. Model handling is flexible: the GCP service reads classifier and detector blob paths from environment variables, so a future model version can be swapped by changing Cloud Storage object names rather than changing Lambda or Cloud Run source code.
+
+\section*{4. Core Requirement Coverage}
+\begin{summarybox}{Implemented and Verified}
+\begin{itemize}
+  \item Authentication and authorisation: AWS Cognito Hosted UI plus API Gateway JWT authoriser; unauthenticated API calls return 401.
+  \item File handling: S3 originals, S3 thumbnails and video frames, checksum deduplication, DynamoDB metadata.
+  \item ML tagging: GCP Cloud Run runs MegaDetector \texttt{mdv5a.pt} and the supplied classifier \texttt{model.pt}.
+  \item Queries: tag-count AND query, species query, thumbnail-to-full-image lookup, query-by-file without permanent storage.
+  \item Mutations: bulk manual tag add/remove and deletion of originals, thumbnails, frames, and metadata.
+  \item Notifications: watched-tag events create in-app records and publish through SNS and verified SMTP email.
+\end{itemize}
+\end{summarybox}
+
+\section*{5. User Guide for Testing}
+\begin{enumerate}[leftmargin=*]
+  \item Start the UI with \texttt{python3 -m src.aussie\_ecolens.server} and open \texttt{127.0.0.1:8080}.
+  \item Register or sign in through Cognito. After login, the app shows the user's name and protected tools.
+  \item In Image mode, upload one or more test images. Expected output: thumbnails, model-derived tag chips, duplicate feedback, and copyable Thumbnail URLs.
+  \item Query by tag count, for example species \texttt{casuarius\_casuarius} with minimum count 1, then repeat as a species-only query.
+  \item Paste a Thumbnail URL into the thumbnail lookup tool. Expected output: an openable full original image URL.
+  \item Use Query by file to submit a file for temporary tag detection. The file is not stored as new media.
+  \item Add or remove manual tags from one or more media URLs, then query the tag to verify the update.
+  \item Switch to Video mode and upload a short video. Expected output: original video URL, extracted frame previews, and aggregated model tags.
+  \item Register a watch for a species tag, upload matching media, refresh Notifications, and confirm the SMTP email.
+  \item Delete a media URL and verify it disappears from query results and storage-derived outputs.
+\end{enumerate}
+
+\section*{6. Team Contributions}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{34mm}>{\raggedleft\arraybackslash}p{26mm}X}
+\toprule
+\textbf{Name and ID} & \textbf{Contribution \%} & \textbf{Project elements contributed}\\
+\midrule
+\textcolor{GcpRed}{TBD: Name, Student ID} & \textcolor{GcpRed}{TBD \%} & Replace with each member's real contribution summary, maximum 100 words per member.\\
+\textcolor{GcpRed}{TBD: Name, Student ID} & \textcolor{GcpRed}{TBD \%} & Replace with authentication, cloud deployment, ML integration, UI, testing, documentation, or reporting contributions as appropriate.\\
+\textcolor{GcpRed}{TBD: Name, Student ID} & \textcolor{GcpRed}{TBD \%} & Replace before final Moodle submission.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section*{7. Repository and References}
+Private source code repository: \href{https://github.com/ada-yq225/AussieEcoLens}{https://github.com/ada-yq225/AussieEcoLens}. Keep the repository private and share it with the teaching team.
+
+\textbf{Icon sources.} AWS icons were downloaded from the official AWS Architecture Icons page: \href{https://aws.amazon.com/architecture/icons/}{aws.amazon.com/architecture/icons}. Google Cloud icons were downloaded from the official Google Cloud product icons library: \href{https://cloud.google.com/icons}{cloud.google.com/icons}.
+
+\end{document}
