@@ -435,7 +435,7 @@ def send_smtp_email(recipient: str, subject: str, body: str) -> bool:
         if SMTP_STARTTLS:
             client.starttls()
         if SMTP_USERNAME or SMTP_PASSWORD:
-            client.login(SMTP_USERNAME, SMTP_PASSWORD)
+            client.login(SMTP_USERNAME, "".join(SMTP_PASSWORD.split()))
         client.send_message(message)
     return True
 

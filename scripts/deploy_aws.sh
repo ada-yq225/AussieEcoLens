@@ -21,6 +21,8 @@ SMTP_FROM="${SMTP_FROM:-}"
 SMTP_STARTTLS="${SMTP_STARTTLS:-true}"
 FFMPEG_LAYER_ARN="${FFMPEG_LAYER_ARN:-}"
 
+SMTP_PASSWORD="$(printf '%s' "$SMTP_PASSWORD" | tr -d '[:space:]')"
+
 sam build --template-file infra/aws/template.yaml
 
 PARAM_OVERRIDES=(
