@@ -4,6 +4,38 @@ Aussie EcoLens is a multi-cloud wildlife media management system built for the F
 
 The final deployment uses AWS for the application backend and GCP for the course ML inference service and cross-cloud metadata mirroring.
 
+## Quick Start From a Zip Package
+
+Use this path when sending the project to another person who does not have the existing local environment:
+
+```bash
+unzip AussieEcoLens.zip
+cd AussieEcoLens
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install pillow
+make test
+make run
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8080/
+```
+
+The local tests do not need AWS or GCP credentials. They verify the protected API contract, upload, checksum deduplication, queries, thumbnail lookup, query-by-file, notifications, bulk tag edit, delete, and video metadata handling. The deployed cloud mode uses the real AWS/GCP services and the supplied course ML model.
+
+## Final Report, Manual, and CI
+
+- Team report PDF: `reports/FIT5225_A2_Aussie_EcoLens_Team_Report.pdf`
+- Product/install/testing manual PDF: `reports/Aussie_EcoLens_User_Manual.pdf`
+- Team report LaTeX source: `reports/final_report/main.tex`
+- User manual LaTeX source: `reports/user_manual/main.tex`
+- CI workflow: `.github/workflows/ci.yml`
+- Manual test guide: `README_TESTING.md`
+
 ## Executive Summary
 
 The system supports the complete coursework workflow:

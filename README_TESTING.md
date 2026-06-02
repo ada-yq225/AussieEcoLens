@@ -2,6 +2,24 @@
 
 Use this checklist to verify the final demo from a clean browser session.
 
+## 0. Automated Local CI Check
+
+Before the manual demo, run:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip pillow
+make test
+```
+
+Expected result:
+
+- All local unit tests pass.
+- Protected routes reject unauthenticated requests.
+- Upload, duplicate detection, queries, thumbnail lookup, query-by-file, notifications, tag removal, deletion, and video metadata handling are covered.
+- GitHub Actions runs the same workflow from `.github/workflows/ci.yml` on push and pull request.
+
 ## 1. Start the Web App
 
 From the project root:

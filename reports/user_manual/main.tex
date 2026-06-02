@@ -1,0 +1,280 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,margin=18mm,top=18mm,bottom=19mm]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{lastpage}
+
+\setmainfont{Arial}
+\setsansfont{Arial}
+
+\definecolor{EcoGreen}{HTML}{123D2A}
+\definecolor{Leaf}{HTML}{247348}
+\definecolor{SoftLeaf}{HTML}{EEF7EF}
+\definecolor{Panel}{HTML}{F7FAF6}
+\definecolor{Ink}{HTML}{17221B}
+\definecolor{Muted}{HTML}{5D7464}
+\definecolor{Warn}{HTML}{D3432E}
+\definecolor{GcpBlue}{HTML}{4285F4}
+
+\hypersetup{
+  colorlinks=true,
+  breaklinks=true,
+  linkcolor=EcoGreen,
+  urlcolor=GcpBlue,
+  citecolor=EcoGreen
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textsf{\textcolor{EcoGreen}{Aussie EcoLens Manual}}}
+\rhead{\textsf{\textcolor{Muted}{Installation and Testing}}}
+\cfoot{\textsf{\thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{SoftLeaf}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlist[itemize]{leftmargin=*,nosep}
+\setlist[enumerate]{leftmargin=*}
+
+\newtcolorbox{manualbox}[1]{
+  enhanced,
+  colback=Panel,
+  colframe=Leaf!55,
+  coltitle=EcoGreen,
+  title=\textbf{#1},
+  fonttitle=\sffamily,
+  boxrule=0.7pt,
+  arc=2mm,
+  left=3mm,right=3mm,top=2mm,bottom=2mm
+}
+
+\begin{document}
+
+\begin{titlepage}
+\vspace*{22mm}
+{\fontsize{32}{36}\selectfont\bfseries\textcolor{EcoGreen}{Aussie EcoLens}}\\[3mm]
+{\Large Product, Installation, Testing, and LaTeX Manual}\\[4mm]
+{\large FIT5225 2026 S1 Assignment 2}\\[10mm]
+
+\begin{manualbox}{Purpose}
+This manual is written for a marker, teammate, or new developer who receives the repository as a zip file. It explains what the system does, how to run the local verification workflow without cloud credentials, how to use the deployed cloud application, how to redeploy AWS/GCP resources when credentials are available, and how to rebuild the LaTeX PDFs.
+\end{manualbox}
+
+\vfill
+Repository: \url{https://github.com/ada-yq225/AussieEcoLens}\\
+Primary report PDF: \texttt{reports/FIT5225\_A2\_Aussie\_EcoLens\_Team\_Report.pdf}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{System Overview}
+Aussie EcoLens is a serverless multi-cloud wildlife media platform. Authenticated users can upload images and videos, receive automatic species tags from the supplied course model, query records, retrieve full images from thumbnail URLs, bulk edit tags, delete media, and receive watched-tag notifications.
+
+\begin{manualbox}{Cloud Responsibility Split}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{33mm}X}
+AWS & Cognito authentication, API Gateway, Lambda, S3 originals, S3 thumbnails and video frames, DynamoDB metadata, SNS notifications, SMTP notification path.\\
+GCP & Cloud Run course model service, Cloud Storage model files, Cloud Run metadata mirror endpoint, Cloud Storage mirrored metadata JSON.\\
+Local package & Offline demo server, deterministic local test tagger, unit tests, documentation, LaTeX source, and CI configuration.\\
+\end{tabularx}
+\end{manualbox}
+
+\section{Package Contents}
+\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{43mm}X}
+\toprule
+\textbf{Path} & \textbf{Purpose}\\
+\midrule
+\path{web/} & Browser UI for sign-in, image/video upload, queries, tag management, deletion, and notifications.\\
+\path{src/aussie_ecolens/} & Local demo server and local workflow implementation used by CI.\\
+\path{src/cloud/aws/} & AWS Lambda handlers for upload, model calls, queries, notifications, delete, and GCP mirror calls.\\
+\path{src/cloud/model_service/} & GCP Cloud Run Flask service that loads MegaDetector and the supplied classifier.\\
+\path{src/cloud/gcp/} & GCP metadata mirror endpoint.\\
+\path{infra/aws/template.yaml} & AWS SAM template for Cognito, API Gateway, Lambda, S3, DynamoDB, and SNS.\\
+\path{scripts/} & Deployment scripts, web config renderer, and local course-model prediction helper.\\
+\path{tests/} & Local end-to-end workflow tests.\\
+\path{.github/workflows/ci.yml} & GitHub Actions CI workflow.\\
+\path{reports/} & Final team report PDF, LaTeX source, and this manual.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+
+\section{Local Installation From a Zip File}
+The local workflow does not require AWS or GCP credentials. It verifies the API contract and lets a recipient inspect the UI. The local tagger is deterministic and lightweight; the deployed cloud mode uses the real course ML model.
+
+\subsection{Prerequisites}
+\begin{itemize}
+  \item Python 3.12.
+  \item A terminal with \texttt{make}; if \texttt{make} is unavailable, run the Python commands directly.
+  \item A modern browser.
+  \item Internet is not required for the local tests after dependencies are installed.
+\end{itemize}
+
+\subsection{Commands}
+\begin{verbatim}
+unzip AussieEcoLens.zip
+cd AussieEcoLens
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install pillow
+make test
+make run
+\end{verbatim}
+
+Open:
+\begin{verbatim}
+http://127.0.0.1:8080/
+\end{verbatim}
+
+\begin{manualbox}{Expected Local Test Result}
+\texttt{make test} should run \texttt{python3 -m unittest discover -s tests}. Correct output includes successful tests for protected-route rejection, sign-up/sign-in, upload, duplicate detection, tag-count query, species query, thumbnail lookup, query-by-file, notifications, tag removal, delete, and video metadata handling.
+\end{manualbox}
+
+\section{Using the Web Application}
+\subsection{Authentication}
+In cloud mode, the app redirects users to AWS Cognito Hosted UI. A new user registers with email, first name, last name, and password. After successful authentication, the app stores the Cognito token in the browser and sends it as a bearer token to API Gateway.
+
+\subsection{Image Upload}
+\begin{enumerate}
+  \item Select Image mode.
+  \item Choose one or more wildlife images.
+  \item Click Upload images.
+  \item Check that result cards show thumbnails, species tag chips, duplicate feedback when relevant, and a copyable Thumbnail URL.
+\end{enumerate}
+
+\subsection{Video Upload}
+\begin{enumerate}
+  \item Select Video mode.
+  \item Upload a short demo video, preferably \texttt{.mp4}.
+  \item The cloud Lambda stores the original video, extracts one frame per second with ffmpeg, sends frames to the GCP model service, and aggregates tags.
+  \item The result should show the original video URL, extracted frame previews, frame URLs, and detected tag counts.
+\end{enumerate}
+
+\subsection{Queries}
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{35mm}X>{\raggedright\arraybackslash}p{48mm}}
+\toprule
+\textbf{Query} & \textbf{Input} & \textbf{Correct output}\\
+\midrule
+Tag count query & JSON such as \texttt{\{"casuarius\_casuarius": 1\}} & Media that contain every requested tag with at least the requested count.\\
+Species query & Species such as \texttt{casuarius\_casuarius} & Any image or video with at least one matching tag.\\
+Thumbnail lookup & A copied Thumbnail URL & A full original image URL with an open-image action.\\
+Query by file & An uploaded query-only image & Matching database media; the query file is not stored as media.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+
+\subsection{Manual Tagging and Delete}
+The Manage Tags and Files panel accepts one or more media URLs. For tag editing, operation \texttt{1} adds tags and operation \texttt{0} removes tags. Removing a missing tag is intentionally ignored. The delete workflow removes original objects, thumbnails, video frames, and metadata records.
+
+\subsection{Notifications}
+Users can watch tags such as \texttt{casuarius\_casuarius}. When matching media is uploaded or updated, the system creates an in-app notification and sends messages through SNS and SMTP when configured. SMTP uses a provider-specific app password, not a normal email password.
+
+\section{Cloud Deployment Summary}
+Cloud redeployment requires AWS and GCP credentials. Secrets are not stored in the repository.
+
+\subsection{Deployment Order}
+\begin{enumerate}
+  \item Deploy GCP model service with \texttt{scripts/deploy\_model\_service.sh}.
+  \item Deploy GCP metadata mirror with \texttt{scripts/deploy\_gcp.sh}.
+  \item Deploy AWS resources with \texttt{scripts/deploy\_aws.sh}.
+  \item Start the local UI server and use the generated \texttt{web/config.js} in cloud mode.
+\end{enumerate}
+
+\subsection{Important Environment Variables}
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{41mm}X}
+\toprule
+\textbf{Variable} & \textbf{Meaning}\\
+\midrule
+\path{TAGGER_MODE=course_model} & Ensures AWS Lambda calls the GCP course model service.\\
+\path{MODEL_INFERENCE_ENDPOINT} & Cloud Run model URL.\\
+\path{MODEL_SHARED_SECRET} & Shared secret header used by Lambda and the model service.\\
+\path{GCP_MIRROR_ENDPOINT} & Cloud Run mirror endpoint URL.\\
+\path{GCP_SHARED_SECRET} & Shared secret for metadata mirror calls.\\
+\path{FFMPEG_LAYER_ARN} & Lambda layer containing \path{/opt/bin/ffmpeg} for video frame extraction.\\
+\path{EMAIL_NOTIFICATION_MODE} & \texttt{sns}, \texttt{smtp}, \texttt{both}, or \texttt{none}.\\
+\path{SMTP_PASSWORD} & SMTP app password. Whitespace is stripped by the AWS deploy script.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+
+\section{CI and Verification}
+The repository includes a CI workflow at \texttt{.github/workflows/ci.yml}. It runs on push and pull request.
+
+\begin{manualbox}{CI Checks}
+\begin{itemize}
+  \item Set up Python 3.12.
+  \item Install Pillow for local media processing.
+  \item Compile Python source files with \texttt{py\_compile}.
+  \item Check deployment shell scripts with \texttt{bash -n}.
+  \item Run \texttt{python -m unittest discover -s tests -v}.
+\end{itemize}
+\end{manualbox}
+
+The CI path is intentionally cloud-free so a marker or teammate can validate the zip package without AWS/GCP credentials. The final cloud smoke test is documented in the team report and README files.
+
+\section{Building the LaTeX PDFs}
+The repository contains LaTeX source for both the team report and this manual. Use Tectonic or XeLaTeX because the documents use \texttt{fontspec} and Arial.
+
+\subsection{With Tectonic}
+\begin{verbatim}
+tectonic reports/final_report/main.tex
+cp reports/final_report/main.pdf \
+  reports/FIT5225_A2_Aussie_EcoLens_Team_Report.pdf
+
+tectonic reports/user_manual/main.tex
+cp reports/user_manual/main.pdf \
+  reports/Aussie_EcoLens_User_Manual.pdf
+\end{verbatim}
+
+\subsection{With XeLaTeX}
+\begin{verbatim}
+cd reports/final_report
+xelatex main.tex
+cd ../user_manual
+xelatex main.tex
+\end{verbatim}
+
+\begin{manualbox}{Report Placeholders}
+Before Moodle submission, replace the team contribution placeholders in the team report with real names, student IDs, percentages, and contribution descriptions. Each student must also submit a separate individual report.
+\end{manualbox}
+
+\section{Troubleshooting}
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{39mm}X}
+\toprule
+\textbf{Symptom} & \textbf{Likely cause and fix}\\
+\midrule
+\texttt{Load failed} in the UI & Cloud API request failed. Check sign-in token expiry, API Gateway URL in \texttt{web/config.js}, CORS, and network access.\\
+Returned to sign-in after upload & Cognito token expired or was cleared. Sign out, sign in again, and retry.\\
+No SNS email & SNS subscription email may not be confirmed. SMTP fallback can still prove notification delivery.\\
+No SMTP email & Use a provider-specific app password; do not use a normal Gmail password.\\
+Very large video fails & Direct API Gateway and Lambda are designed for coursework-sized demo files. Use short videos for marking.\\
+Model cold start timeout & Keep Cloud Run model service at minimum one instance during the demo, then set it back to zero after marking to reduce cost.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+
+\section{Security and Submission Notes}
+\begin{itemize}
+  \item Do not commit AWS keys, GCP credentials, SMTP passwords, or shared secrets.
+  \item Keep the GitHub repository private and share it only with the teaching team.
+  \item Do not include local virtual environments in the zip package.
+  \item Include the final team report PDF, individual report PDF, source code, and documentation.
+  \item After assessment, reduce Cloud Run minimum instances to zero if cost saving is required.
+\end{itemize}
+
+\end{document}

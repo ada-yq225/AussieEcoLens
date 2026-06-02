@@ -45,7 +45,7 @@
 \fancyhf{}
 \lhead{\textsf{\textcolor{EcoGreen}{Aussie EcoLens}}}
 \rhead{\textsf{\textcolor{Muted}{FIT5225 2026 S1 A2}}}
-\cfoot{\textsf{\thepage/\pageref*{LastPage}}}
+\cfoot{\textsf{\thepage}}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{SoftLeaf}\leaders\hrule height \headrulewidth\hfill}}
 
@@ -92,7 +92,7 @@
   };
   \node[anchor=south east,align=right,text=EcoGreen] at ($(current page.south east)+(-1.6cm,1.5cm)$) {
     {\Large\bfseries FIT5225 2026 S1 Assignment 2}\\[3pt]
-    {\normalsize Team Report Draft for Final Submission}\\[8pt]
+    {\normalsize Final Team Report and Verification Evidence}\\[8pt]
     {\small Repository: \href{https://github.com/ada-yq225/AussieEcoLens}{github.com/ada-yq225/AussieEcoLens}}
   };
   \node[anchor=north east] at ($(current page.north east)+(-1.25cm,-1.30cm)$) {
@@ -110,12 +110,12 @@
 \end{tikzpicture}
 \vspace*{10.4cm}
 \begin{summarybox}{Submission Note}
-This PDF contains the team report narrative, the multi-cloud architecture diagram, a contribution table template, a user guide, and implementation evidence. Replace the highlighted team-member placeholders with real names, student IDs, and contribution percentages before Moodle submission.
+This PDF contains the team report narrative, the official-icon multi-cloud architecture diagram, rubric coverage evidence, a testing guide, CI evidence, and a contribution table template. Replace the highlighted team-member placeholders with real names, student IDs, and contribution percentages before Moodle submission.
 \end{summarybox}
 \end{titlepage}
 
 \section*{1. Overview}
-Aussie EcoLens is a multi-cloud online media system for wildlife observation data. Authenticated users can upload camera-trap images and short videos, receive automatic species tags from the supplied course machine-learning model, search media by tags or species, retrieve a full image from a thumbnail URL, manually add or remove tags, delete media, and subscribe to watched-tag notifications. The final deployment uses AWS for authentication, API, storage, database, video frame extraction, and notifications, while Google Cloud hosts the ML inference service and mirrored metadata. This split keeps the application serverless while allowing the large PyTorch, MegaDetector, and classifier runtime to run in a suitable container service.
+Aussie EcoLens is a multi-cloud online storage and retrieval system for wildlife media. Authenticated users can upload camera-trap images and videos, receive automatic species tags from the supplied course ML model, query media by tag counts or species, map thumbnail URLs back to full images, query by an uploaded file without storing it, bulk edit tags, delete media, and receive watched-tag notifications. The final deployment deliberately splits responsibilities across two clouds: AWS provides the secure application plane, while Google Cloud runs the heavyweight model container and stores mirrored metadata. This design keeps the API serverless and protected by Cognito while avoiding a large model package inside Lambda.
 
 \vspace{5mm}
 \begin{summarybox}{Live Deployment Snapshot}
@@ -129,7 +129,7 @@ Notification & In-app records, SNS publish path, and verified SMTP email through
 
 \vspace{3mm}
 \begin{summarybox}{Verified Evidence}
-Cloud smoke testing confirmed unauthenticated API rejection, image upload with \texttt{casuarius\_casuarius: 1}, duplicate detection, thumbnail-to-full-image lookup, query-by-file without storage, manual tag edit, deletion, video frame extraction at one frame per second, GCP metadata mirroring, and notification channels \texttt{in\_app}, \texttt{sns}, and \texttt{smtp}.
+Cloud smoke testing confirmed unauthenticated API rejection, image upload with \texttt{casuarius\_casuarius: 1}, checksum duplicate detection, thumbnail-to-full-image lookup, query-by-file without storage, manual tag edit, deletion, video frame extraction at one frame per second, GCP metadata mirroring, and watched-tag notifications through \texttt{in\_app}, \texttt{sns}, and \texttt{smtp}. Local CI tests verify the same API contract without requiring cloud credentials.
 \end{summarybox}
 
 \newpage
@@ -197,35 +197,82 @@ Cloud smoke testing confirmed unauthenticated API rejection, image upload with \
 \newpage
 
 \section*{3. Design and Implementation Choices}
-The system is serverless because the workload is event-driven: uploads, queries, tag edits, deletes, and notification watches happen intermittently and should scale without managing virtual machines. Deduplication uses a SHA-256 checksum, so repeated uploads return existing metadata instead of wasting storage. Images receive compressed thumbnails with preserved aspect ratio. Videos are sampled at one frame per second with ffmpeg; each extracted frame is submitted to the same model service and the predictions are aggregated as tag counts. Model handling is flexible: the GCP service reads classifier and detector blob paths from environment variables, so a future model version can be swapped by changing Cloud Storage object names rather than changing Lambda or Cloud Run source code.
+The system is serverless because the workload is naturally event-driven: uploads, query requests, tag edits, deletes, and notification watches arrive intermittently and should not require a managed virtual machine. AWS Lambda calculates a SHA-256 checksum before creating metadata, so repeated uploads return the existing record rather than wasting storage. Image thumbnails are compressed while preserving aspect ratio. Video uploads are sampled with ffmpeg at one frame per second, and each extracted frame is sent to the same course model pipeline as image uploads. Model handling is intentionally configurable: Cloud Run reads classifier and detector blob names from environment variables, so a future \texttt{model.pt} or \texttt{mdv5a.pt} can be swapped by changing Cloud Storage object paths rather than editing Lambda source code.
 
-\section*{4. Core Requirement Coverage}
-\begin{summarybox}{Implemented and Verified}
-\begin{itemize}
-  \item Authentication and authorisation: AWS Cognito Hosted UI plus API Gateway JWT authoriser; unauthenticated API calls return 401.
-  \item File handling: S3 originals, S3 thumbnails and video frames, checksum deduplication, DynamoDB metadata.
-  \item ML tagging: GCP Cloud Run runs MegaDetector \texttt{mdv5a.pt} and the supplied classifier \texttt{model.pt}.
-  \item Queries: tag-count AND query, species query, thumbnail-to-full-image lookup, query-by-file without permanent storage.
-  \item Mutations: bulk manual tag add/remove and deletion of originals, thumbnails, frames, and metadata.
-  \item Notifications: watched-tag events create in-app records and publish through SNS and verified SMTP email.
-\end{itemize}
+\begin{summarybox}{No Material Shortcuts}
+The final cloud mode uses the supplied ML model, not filename-only tagging. Filename tagging remains only as a deterministic local fallback for CI and offline demonstration. The cloud smoke test exercised real GCP model inference, AWS storage, DynamoDB metadata, Cognito-protected APIs, GCP mirroring, video frame extraction, and verified SMTP notification delivery.
 \end{summarybox}
 
-\section*{5. User Guide for Testing}
-\begin{enumerate}[leftmargin=*]
-  \item Start the UI with \texttt{python3 -m src.aussie\_ecolens.server} and open \texttt{127.0.0.1:8080}.
-  \item Register or sign in through Cognito. After login, the app shows the user's name and protected tools.
-  \item In Image mode, upload one or more test images. Expected output: thumbnails, model-derived tag chips, duplicate feedback, and copyable Thumbnail URLs.
-  \item Query by tag count, for example species \texttt{casuarius\_casuarius} with minimum count 1, then repeat as a species-only query.
-  \item Paste a Thumbnail URL into the thumbnail lookup tool. Expected output: an openable full original image URL.
-  \item Use Query by file to submit a file for temporary tag detection. The file is not stored as new media.
-  \item Add or remove manual tags from one or more media URLs, then query the tag to verify the update.
-  \item Switch to Video mode and upload a short video. Expected output: original video URL, extracted frame previews, and aggregated model tags.
-  \item Register a watch for a species tag, upload matching media, refresh Notifications, and confirm the SMTP email.
-  \item Delete a media URL and verify it disappears from query results and storage-derived outputs.
-\end{enumerate}
+\section*{4. Rubric Coverage Matrix}
+\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{34mm}>{\raggedright\arraybackslash}p{61mm}X}
+\toprule
+\textbf{Rubric item} & \textbf{Implemented evidence} & \textbf{Verification path}\\
+\midrule
+Cognito auth and sign-out & AWS Cognito Hosted UI, email attributes, first and last name fields, JWT tokens, sign-out button. & Sign up or sign in through the Cognito domain; UI shows the authenticated user and protected workflows.\\
+Access control and IAM & API Gateway JWT authoriser protects \texttt{/api/*}. Lambda role is scoped to S3 buckets, DynamoDB table, SNS topic, Rekognition where enabled, and CloudWatch logs. & Unauthenticated API smoke test returns 401; SAM template defines managed policies and bucket/table/topic permissions.\\
+Upload and deduplication & Authenticated upload stores originals in S3. SHA-256 checksum is the media key and duplicate uploads return existing metadata. & Upload the same file twice; UI reports duplicate and does not create a second metadata record.\\
+Image thumbnails and video frames & Lambda creates compressed JPEG thumbnails for images and extracts video frames with \texttt{fps=1}; frames are stored in the thumbnail bucket. & Upload an image and video; verify thumbnail URL, frame URLs, and roughly one frame per second.\\
+ML tagging and DB insertion & AWS Lambda calls GCP Cloud Run; Cloud Run loads \texttt{model.pt} and \texttt{mdv5a.pt} from GCP Storage and returns species counts. DynamoDB stores media type, tags, original key, thumbnail key, frame keys, owner, and timestamp. & Cloud test returned \texttt{casuarius\_casuarius: 1}; video frames are sent to the same model endpoint.\\
+Queries & APIs implement tag-count AND search, species search, thumbnail-to-full URL lookup, and query-by-file without storage. & UI query panels and local CI tests exercise each endpoint.\\
+Bulk tag edit and delete & POST tag edit accepts URL list, tags, and operation 1 or 0. Delete removes originals, thumbnails, video frames, and DynamoDB items. & UI manage panel plus local tests for bulk remove and deletion.\\
+Notifications & Watch records trigger in-app notes and publish via SNS and SMTP email. & Cloud smoke test returned channels \texttt{in\_app}, \texttt{sns}, and \texttt{smtp}; recipient confirmed receiving SMTP email.\\
+UI completeness & Single-page UI supports auth, image/video upload mode switch, batch upload, queries, thumbnail preview, URL copy/show controls, tag editing, delete, and notifications. & Demonstrate every workflow from \texttt{README\_TESTING.md}.\\
+Reports and repository & This PDF includes official icons, contribution table, testing guide, and source link. Detailed product manual and CI workflow are included in the repository. & Repository link: \url{https://github.com/ada-yq225/AussieEcoLens}.\\
+\bottomrule
+\end{tabularx}
+\normalsize
 
-\section*{6. Team Contributions}
+\section*{5. Testing, CI, and Reproducibility}
+\begin{summarybox}{Automated CI}
+The repository includes \texttt{.github/workflows/ci.yml}. On push or pull request, GitHub Actions installs Python 3.12 and Pillow, compiles Python sources, checks deployment shell scripts with \texttt{bash -n}, and runs \texttt{python -m unittest discover -s tests -v}. The tests cover protected-route rejection, local sign-up/sign-in, upload, checksum deduplication, tag-count AND query, species query, thumbnail lookup, query-by-file, watched-tag notifications, bulk tag removal, deletion, and video metadata upload.
+\end{summarybox}
+
+\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{32mm}X>{\raggedright\arraybackslash}p{46mm}}
+\toprule
+\textbf{Test type} & \textbf{Purpose} & \textbf{Command or evidence}\\
+\midrule
+Local CI workflow & Reproducible verification without cloud credentials. & Python unittest discovery over \texttt{tests/}.\\
+Cloud smoke test & Confirms deployed AWS/GCP services and real ML model integration. & Verified image upload, duplicate handling, query-by-file, deletion, GCP mirror, SMTP email.\\
+Manual demo script & Gives teaching staff a predictable demonstration order. & README testing guide and demo walkthrough.\\
+Deployment scripts & Ensure cloud infrastructure can be recreated by an authorised user. & CI syntax-checks the AWS, GCP, and model-service deploy scripts.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+
+\section*{6. User Guide for Testing}
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{31mm}X>{\raggedright\arraybackslash}p{54mm}}
+\toprule
+\textbf{Workflow} & \textbf{Steps} & \textbf{Expected output}\\
+\midrule
+Start UI & Run \texttt{python3 -m src.aussie\_ecolens.server}; open \texttt{127.0.0.1:8080}. & Page loads and redirects to Cognito in cloud mode.\\
+Sign in & Register or sign in through Cognito Hosted UI. & User name and Sign out button appear; protected tools are visible.\\
+Image upload & Select Image mode, choose one or more images, click upload. & Result cards show thumbnails, tag chips, duplicate status, and copyable Thumbnail URLs.\\
+Video upload & Select Video mode and upload a short video. & Original video URL, extracted frame previews, frame URLs, and aggregated tags appear.\\
+Tag query & Submit JSON such as \texttt{\{"casuarius\_casuarius": 1\}}. & Results contain media whose counts meet all requested tags.\\
+Species query & Search for a species name such as \texttt{casuarius\_casuarius}. & All matching images and videos are returned.\\
+Thumbnail lookup & Paste a Thumbnail URL and click Get full image. & UI returns an openable, copyable full original image URL.\\
+Query by file & Upload a query-only image. & Detected tags are used to search existing media; the query file is not permanently stored.\\
+Tag edit/delete & Paste one or more media URLs, add/remove tags, then delete. & Query results update, and delete removes metadata and stored derivatives.\\
+Notifications & Watch a species tag, upload matching media, refresh Notifications. & In-app note appears and verified SMTP email is sent.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+
+\section*{7. Packaging and Remaining Submission Tasks}
+\begin{summarybox}{Zip Package Reproducibility}
+A recipient can unzip the repository, install Python 3.12 plus Pillow, run \texttt{make test}, and start the local web demo without AWS or GCP credentials. Cloud redeployment requires AWS and GCP login plus the deployment variables documented in the LaTeX user manual. Secrets are intentionally excluded from the repository.
+\end{summarybox}
+
+\begin{summarybox}{Only Non-Technical Placeholders Remain}
+The implementation and technical documentation are complete. Before Moodle submission, replace the contribution table placeholders with real names, student IDs, percentages, and contribution descriptions. Each student must also submit their own individual report.
+\end{summarybox}
+
+\section*{8. Team Contributions}
 \begin{center}
 \renewcommand{\arraystretch}{1.25}
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{34mm}>{\raggedleft\arraybackslash}p{26mm}X}
@@ -239,11 +286,13 @@ The system is serverless because the workload is event-driven: uploads, queries,
 \end{tabularx}
 \end{center}
 
-\section*{7. Repository and References}
+\section*{9. Repository, References, and AI Statement}
 Private source code repository: \href{https://github.com/ada-yq225/AussieEcoLens}{https://github.com/ada-yq225/AussieEcoLens}. Keep the repository private and share it with the teaching team.
 
 \textbf{Icon sources.} AWS icons were downloaded from the official AWS Architecture Icons page:
 \url{https://aws.amazon.com/architecture/icons/}. Google Cloud icons were downloaded from the official Google Cloud product icons library:
 \url{https://cloud.google.com/icons}.
+
+\textbf{Generative AI acknowledgement.} Generative AI assistance was used selectively for implementation support, debugging, documentation drafting, and report layout. The team remains responsible for verifying the final code, cloud configuration, tests, and submitted text.
 
 \end{document}

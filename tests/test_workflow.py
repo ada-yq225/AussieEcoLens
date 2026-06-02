@@ -25,6 +25,9 @@ class WorkflowTest(unittest.TestCase):
         cls.httpd.shutdown()
         cls.thread.join(timeout=5)
 
+    def setUp(self):
+        reset_demo_data()
+
     def request(self, method, path, body=None, headers=None):
         conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
         conn.request(method, path, body=body, headers=headers or {})
@@ -40,12 +43,30 @@ class WorkflowTest(unittest.TestCase):
             headers["authorization"] = f"Bearer {token}"
         return self.request("POST", path, json.dumps(payload), headers)
 
-    def multipart_request(self, path, filename, data, token):
+    def signup_and_signin(self, email):
+        status, data = self.json_request(
+            "/api/auth/signup",
+            {
+                "email": email,
+                "first_name": "Demo",
+                "last_name": "User",
+                "password": "Passw0rd!",
+            },
+        )
+        self.assertEqual(status, 200, data)
+        status, data = self.json_request(
+            "/api/auth/signin",
+            {"email": email, "password": "Passw0rd!"},
+        )
+        self.assertEqual(status, 200, data)
+        return data["token"]
+
+    def multipart_request(self, path, filename, data, token, content_type="image/jpeg"):
         boundary = "----aussie-ecolens-test"
         body = (
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
-            "Content-Type: image/jpeg\r\n\r\n"
+            f"Content-Type: {content_type}\r\n\r\n"
         ).encode("utf-8") + data + f"\r\n--{boundary}--\r\n".encode("utf-8")
         return self.request(
             "POST",
@@ -138,6 +159,63 @@ class WorkflowTest(unittest.TestCase):
         status, empty = self.json_request("/api/query/species", {"species": "koala"}, token)
         self.assertEqual(status, 200, empty)
         self.assertEqual(empty["results"], [])
+
+    def test_protected_routes_require_authentication(self):
+        image = self.image_bytes()
+
+        status, data = self.multipart_request("/api/upload", "koala1.jpg", image, token="")
+        self.assertEqual(status, 401, data)
+        self.assertEqual(data["error"], "authentication required")
+
+        status, data = self.json_request("/api/query/species", {"species": "koala"})
+        self.assertEqual(status, 401, data)
+        self.assertEqual(data["error"], "authentication required")
+
+    def test_bulk_tag_remove_ignores_missing_tags(self):
+        token = self.signup_and_signin("bulk@example.com")
+
+        image = self.image_bytes() + b"bulk-remove"
+        status, upload = self.multipart_request("/api/upload", "dingo1_magpie2.jpg", image, token)
+        self.assertEqual(status, 200, upload)
+        media = upload["media"]
+        self.assertEqual(media["tags"]["dingo"], 1)
+        self.assertEqual(media["tags"]["magpie"], 2)
+
+        status, edited = self.json_request(
+            "/api/tags/edit",
+            {"urls": [media["full_url"]], "tags": ["magpie", "missing_tag"], "operation": 0},
+            token,
+        )
+        self.assertEqual(status, 200, edited)
+
+        status, magpie = self.json_request("/api/query/species", {"species": "magpie"}, token)
+        self.assertEqual(status, 200, magpie)
+        self.assertFalse(any(item["id"] == media["id"] for item in magpie["results"]))
+
+        status, dingo = self.json_request("/api/query/species", {"species": "dingo"}, token)
+        self.assertEqual(status, 200, dingo)
+        self.assertTrue(any(item["id"] == media["id"] for item in dingo["results"]))
+
+    def test_video_upload_records_media_type_and_queryable_tags(self):
+        token = self.signup_and_signin("video@example.com")
+
+        fake_video = b"not-a-real-video-but-valid-for-local-metadata-test"
+        status, upload = self.multipart_request(
+            "/api/upload",
+            "kangaroo1_demo.mp4",
+            fake_video,
+            token,
+            content_type="video/mp4",
+        )
+        self.assertEqual(status, 200, upload)
+        media = upload["media"]
+        self.assertEqual(media["media_type"], "video")
+        self.assertIsNone(media["thumbnail_url"])
+        self.assertEqual(media["tags"]["kangaroo"], 1)
+
+        status, query = self.json_request("/api/query/tags", {"tags": {"kangaroo": 1}}, token)
+        self.assertEqual(status, 200, query)
+        self.assertTrue(any(item["id"] == media["id"] for item in query["results"]))
 
 
 class CourseLabelsTest(unittest.TestCase):
