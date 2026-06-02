@@ -148,7 +148,7 @@ Cloud smoke testing confirmed unauthenticated API rejection, image upload with \
   external/.style={draw=Leaf!50,fill=SoftLeaf,rounded corners=2.1mm,line width=0.72pt,minimum width=31mm,minimum height=16mm,align=center,font=\scriptsize\sffamily},
   arrow/.style={-{Latex[length=2mm]},line width=0.68pt,draw=Ink!70},
   data/.style={-{Latex[length=2mm]},line width=0.68pt,draw=GcpBlue!85},
-  note/.style={font=\tiny\sffamily,text=Muted,align=center}
+  note/.style={font=\tiny\sffamily,text=Muted,align=center,fill=white,inner sep=1pt}
 ]
   \node[external,minimum width=30mm] (user) {Browser UI\\JWT session};
   \node[aws,right=9mm of user] (cognito) {\includegraphics[width=6mm]{\asset{aws_cognito.png}}\\Amazon Cognito};
@@ -161,9 +161,9 @@ Cloud smoke testing confirmed unauthenticated API rejection, image upload with \
   \node[aws,above=10mm of lambda] (sns) {\includegraphics[width=6mm]{\asset{aws_sns.png}}\\SNS topic};
   \node[external,above=7mm of sns] (smtp) {SMTP email\\Gmail App Password};
 
-  \node[gcp,right=27mm of lambda] (model) {\includegraphics[width=6mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\model service};
+  \node[gcp,right=36mm of lambda] (model) {\includegraphics[width=6mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\model service};
   \node[gcp,below=13mm of model] (modelbucket) {\includegraphics[width=6mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\model.pt, mdv5a.pt};
-  \node[gcp,right=13mm of model] (mirror) {\includegraphics[width=6mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\mirror endpoint};
+  \node[gcp,above right=8mm and 16mm of model] (mirror) {\includegraphics[width=6mm]{\asset{gcp_cloud_run.png}}\\Cloud Run\\mirror endpoint};
   \node[gcp,below=13mm of mirror] (mirrorbucket) {\includegraphics[width=6mm]{\asset{gcp_cloud_storage.png}}\\Cloud Storage\\metadata JSON};
 
   \begin{pgfonlayer}{background}
@@ -179,9 +179,11 @@ Cloud smoke testing confirmed unauthenticated API rejection, image upload with \
   \draw[arrow] (lambda) -- (ddb);
   \draw[arrow] (lambda) -- node[note,right]{watched tag} (sns);
   \draw[arrow] (sns) -- (smtp);
-  \draw[data] (lambda) -- node[note,above]{image bytes\\video frames} (model);
+  \coordinate (modelroute) at ($(lambda.east)+(18mm,-4mm)$);
+  \coordinate (mirrorroute) at ($(lambda.east)+(18mm,5mm)$);
+  \draw[data] ($(lambda.east)+(0,-4mm)$) -- node[note,below]{image bytes\\video frames} (modelroute) |- (model.west);
   \draw[data] (model) -- (modelbucket);
-  \draw[data] (lambda) -- node[note,above]{signed metadata} (mirror);
+  \draw[data] ($(lambda.east)+(0,5mm)$) -- node[note,above]{signed metadata} (mirrorroute) |- (mirror.west);
   \draw[data] (mirror) -- (mirrorbucket);
 \end{tikzpicture}
 }
