@@ -20,7 +20,7 @@ Required services:
 Install/login requirements:
 
 ```bash
-export PATH="/Users/yq225/Library/Python/3.9/bin:$PATH"
+export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 aws configure sso
 aws sts get-caller-identity
 sam --version
@@ -138,7 +138,7 @@ The current deployable cloud code supports:
 - `rekognition`: AWS Rekognition DetectLabels.
 - `course_model`: final mode. AWS Lambda calls the GCP Cloud Run model service using the supplied MegaDetector and classifier.
 
-The teaching material in `/Users/yq225/Downloads/作业资料/AussieEcoLense.zip` supplies:
+The teaching material in `course_models.zip` supplies:
 
 - `mdv5a.pt`: MegaDetector.
 - `model.pt`: fine-tuned SpeciesNet classifier.
@@ -149,9 +149,9 @@ Local model verification script:
 
 ```bash
 python3.12 -m pip install megadetector tqdm onnx2torch
-python3.12 scripts/course_model_predict.py /Users/yq225/Downloads/作业资料/test_images/Casuarius_casuarius_1.JPG \
-  --model /Users/yq225/Downloads/作业资料/AussieEcoLense/model.pt \
-  --detector /Users/yq225/Downloads/作业资料/AussieEcoLense/mdv5a.pt
+python3.12 scripts/course_model_predict.py test_images/Casuarius_casuarius_1.JPG \
+  --model course_models/model.pt \
+  --detector course_models/mdv5a.pt
 ```
 
 The final deployment uses the Cloud Run option because the supplied model package is too large for a simple zip-based Lambda function. AWS Lambda stays small and serverless, while the model container runs in GCP with Python 3.12, PyTorch, torchvision, MegaDetector, and onnx2torch installed.

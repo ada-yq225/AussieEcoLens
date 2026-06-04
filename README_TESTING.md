@@ -25,7 +25,7 @@ Expected result:
 From the project root:
 
 ```bash
-cd /Users/yq225/AussieEcoLens
+cd AussieEcoLens
 python3 -m src.aussie_ecolens.server
 ```
 

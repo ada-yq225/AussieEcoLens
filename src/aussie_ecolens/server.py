@@ -177,8 +177,8 @@ def detect_tags(filename: str, data: bytes) -> Dict[str, int]:
 def course_model_tags(filename: str, data: bytes) -> Dict[str, int]:
     python_path = ROOT / ".venv312" / "bin" / "python"
     script_path = ROOT / "scripts" / "course_model_predict.py"
-    model_path = Path(os.environ.get("COURSE_MODEL_PATH", "/Users/yq225/Downloads/作业资料/AussieEcoLense/model.pt"))
-    detector_path = Path(os.environ.get("COURSE_DETECTOR_PATH", "/Users/yq225/Downloads/作业资料/AussieEcoLense/mdv5a.pt"))
+    model_path = Path(os.environ.get("COURSE_MODEL_PATH", str(ROOT / "course_models" / "model.pt")))
+    detector_path = Path(os.environ.get("COURSE_DETECTOR_PATH", str(ROOT / "course_models" / "mdv5a.pt")))
     if not python_path.exists() or not script_path.exists() or not model_path.exists() or not detector_path.exists():
         return {}
     suffix = Path(filename).suffix or ".jpg"

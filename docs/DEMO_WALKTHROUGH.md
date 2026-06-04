@@ -36,7 +36,7 @@ This document is the working demo guide for the final assignment demonstration.
 Start the UI:
 
 ```bash
-cd /Users/yq225/AussieEcoLens
+cd AussieEcoLens
 python3 -m src.aussie_ecolens.server
 ```
 
@@ -53,16 +53,16 @@ The UI is configured in cloud mode through `web/config.js`, so sign-up and sign-
 The supplied course model is installed locally in:
 
 ```text
-/Users/yq225/AussieEcoLens/.venv312
+AussieEcoLens/.venv312
 ```
 
 Run the standalone model test:
 
 ```bash
 .venv312/bin/python scripts/course_model_predict.py \
-  /Users/yq225/Downloads/作业资料/test_images/Casuarius_casuarius_2.JPG \
-  --model /Users/yq225/Downloads/作业资料/AussieEcoLense/model.pt \
-  --detector /Users/yq225/Downloads/作业资料/AussieEcoLense/mdv5a.pt
+  test_images/Casuarius_casuarius_2.JPG \
+  --model course_models/model.pt \
+  --detector course_models/mdv5a.pt
 ```
 
 Verified output:

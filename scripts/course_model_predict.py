@@ -142,8 +142,8 @@ def predict(image_path: Path, model_path: Path, detector_path: Path) -> Dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("image", type=Path)
-    parser.add_argument("--model", type=Path, default=Path("/Users/yq225/Downloads/作业资料/AussieEcoLense/model.pt"))
-    parser.add_argument("--detector", type=Path, default=Path("/Users/yq225/Downloads/作业资料/AussieEcoLense/mdv5a.pt"))
+    parser.add_argument("--model", type=Path, default=Path("course_models/model.pt"))
+    parser.add_argument("--detector", type=Path, default=Path("course_models/mdv5a.pt"))
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     result = predict(args.image, args.model, args.detector)

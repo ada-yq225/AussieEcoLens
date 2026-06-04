@@ -148,7 +148,7 @@ Actual decoding depends on ffmpeg codec support in the Lambda layer. There is no
 From the project root:
 
 ```bash
-cd /Users/yq225/AussieEcoLens
+cd AussieEcoLens
 python3 -m src.aussie_ecolens.server
 ```
 
@@ -462,14 +462,14 @@ LOCAL_TAGGER_MODE=course python3 -m src.aussie_ecolens.server
 The local ML environment is:
 
 ```text
-/Users/yq225/AussieEcoLens/.venv312
+AussieEcoLens/.venv312
 ```
 
 The supplied model files are expected at:
 
 ```text
-/Users/yq225/Downloads/作业资料/AussieEcoLense/model.pt
-/Users/yq225/Downloads/作业资料/AussieEcoLense/mdv5a.pt
+course_models/model.pt
+course_models/mdv5a.pt
 ```
 
 Run local tests:
