@@ -36,6 +36,31 @@ The local tests do not need AWS or GCP credentials. They verify the protected AP
 - CI workflow: `.github/workflows/ci.yml`
 - Manual test guide: `README_TESTING.md`
 
+## Bundling the Course Model
+
+The project can be packaged with the supplied course model files embedded under `course_models/`:
+
+```text
+course_models/model.pt
+course_models/mdv5a.pt
+course_models/labels.txt
+course_models/config.yaml
+```
+
+The two `.pt` files are intentionally ignored by Git because they are large. To prepare the local model directory:
+
+```bash
+scripts/prepare_course_models.sh /path/to/AussieEcoLense
+```
+
+To create a complete zip for another person, including the ignored model binaries when they exist locally:
+
+```bash
+scripts/package_submission.sh
+```
+
+The generated zip appears in `dist/`. Without these model files, local CI and filename-based demo mode still run, but offline course-model inference will not be available.
+
 ## Executive Summary
 
 The system supports the complete coursework workflow:
@@ -78,10 +103,10 @@ The system supports the complete coursework workflow:
 
 ```text
 Web UI:              http://127.0.0.1:8080/
-AWS API Gateway:     https://e4a7ina4v9.execute-api.ap-southeast-2.amazonaws.com
-Cognito Domain:      https://aussie-ecolens-828876761072-ap-southeast-2.auth.ap-southeast-2.amazoncognito.com
-GCP Model Service:   https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app
-GCP Mirror Function: https://aussie-ecolens-mirror-hzmou43rsa-ts.a.run.app
+AWS API Gateway:     https://YOUR_API_ID.execute-api.YOUR_AWS_REGION.amazonaws.com
+Cognito Domain:      https://YOUR_COGNITO_DOMAIN.auth.YOUR_AWS_REGION.amazoncognito.com
+GCP Model Service:   https://YOUR_MODEL_SERVICE_URL
+GCP Mirror Function: https://YOUR_MIRROR_SERVICE_URL
 ```
 
 ## How The ML Tagging Works
@@ -337,14 +362,14 @@ TAGGER_MODE=course_model \
 EMAIL_NOTIFICATION_MODE=smtp \
 SMTP_HOST=smtp.gmail.com \
 SMTP_PORT=587 \
-SMTP_USERNAME=your_sender@gmail.com \
+SMTP_USERNAME=your_sender@example.com \
 SMTP_PASSWORD='your_gmail_app_password' \
-SMTP_FROM=your_sender@gmail.com \
+SMTP_FROM=your_sender@example.com \
 SMTP_STARTTLS=true \
-FFMPEG_LAYER_ARN='arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1' \
-GCP_MIRROR_ENDPOINT='https://aussie-ecolens-mirror-hzmou43rsa-ts.a.run.app' \
+FFMPEG_LAYER_ARN='arn:aws:lambda:YOUR_AWS_REGION:YOUR_AWS_ACCOUNT_ID:layer:ffmpeg:VERSION' \
+GCP_MIRROR_ENDPOINT='https://YOUR_MIRROR_SERVICE_URL' \
 GCP_SHARED_SECRET='...' \
-MODEL_INFERENCE_ENDPOINT='https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app' \
+MODEL_INFERENCE_ENDPOINT='https://YOUR_MODEL_SERVICE_URL' \
 MODEL_SHARED_SECRET='...' \
 scripts/deploy_aws.sh
 ```
@@ -363,7 +388,7 @@ This keeps one model service instance warm so uploads do not fail on first use. 
 
 ```bash
 tools/google-cloud-sdk/bin/gcloud run services update aussie-ecolens-model \
-  --project=aussie-ecolens-raywu361 \
+  --project=YOUR_GCP_PROJECT_ID \
   --region=australia-southeast1 \
   --min-instances=0
 ```
@@ -371,9 +396,9 @@ tools/google-cloud-sdk/bin/gcloud run services update aussie-ecolens-model \
 To deploy the model service with a chosen value:
 
 ```bash
-GCP_PROJECT_ID=aussie-ecolens-raywu361 \
+GCP_PROJECT_ID=YOUR_GCP_PROJECT_ID \
 GCP_REGION=australia-southeast1 \
-MODEL_BUCKET=aussie-ecolens-raywu361-models \
+MODEL_BUCKET=YOUR_MODEL_BUCKET \
 MODEL_SHARED_SECRET='...' \
 MODEL_MIN_INSTANCES=1 \
 CLASSIFIER_BLOB=course-model/model.pt \

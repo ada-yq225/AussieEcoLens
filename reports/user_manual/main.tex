@@ -106,9 +106,36 @@ Local package & Offline demo server, deterministic local test tagger, unit tests
 \path{tests/} & Local end-to-end workflow tests.\\
 \path{.github/workflows/ci.yml} & GitHub Actions CI workflow.\\
 \path{reports/} & Final team report PDF, LaTeX source, and this manual.\\
+\path{course_models/} & Optional embedded course model directory. The large \texttt{.pt} files are ignored by Git but can be included in the final zip.\\
 \bottomrule
 \end{tabularx}
 \normalsize
+
+\section{Bundling the Course Model}
+The supplied course model can be bundled inside the project under \path{course_models/}. This makes a zip package self-contained for offline model inference, while keeping the Git repository small and safe to push.
+
+\begin{manualbox}{Required Embedded Model Files}
+\begin{verbatim}
+course_models/model.pt
+course_models/mdv5a.pt
+course_models/labels.txt
+course_models/config.yaml
+\end{verbatim}
+\end{manualbox}
+
+Prepare the folder from the course asset directory:
+
+\begin{verbatim}
+scripts/prepare_course_models.sh /path/to/AussieEcoLense
+\end{verbatim}
+
+Create a complete zip package:
+
+\begin{verbatim}
+scripts/package_submission.sh
+\end{verbatim}
+
+The package script creates \path{dist/AussieEcoLens_submission.zip}. If \path{course_models/model.pt} and \path{course_models/mdv5a.pt} exist locally, they are copied into the zip even though they are ignored by Git.
 
 \section{Local Installation From a Zip File}
 The local workflow does not require AWS or GCP credentials. It verifies the API contract and lets a recipient inspect the UI. The local tagger is deterministic and lightweight; the deployed cloud mode uses the real course ML model.

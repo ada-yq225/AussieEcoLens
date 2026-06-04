@@ -8,27 +8,27 @@ This document is the working demo guide for the final assignment demonstration.
 
 - Region: `ap-southeast-2`
 - CloudFormation stack: `aussie-ecolens`
-- API Gateway URL: `https://e4a7ina4v9.execute-api.ap-southeast-2.amazonaws.com`
-- Cognito User Pool: `ap-southeast-2_WRgsNIPqw`
-- Cognito Client ID: `3mqkk0qovhrtse73noholbdbnr`
-- Cognito Domain: `https://aussie-ecolens-828876761072-ap-southeast-2.auth.ap-southeast-2.amazoncognito.com`
-- Media S3 bucket: `aussie-ecolens-mediabucket-1e7c2q6ajljd`
-- Thumbnail/frame S3 bucket: `aussie-ecolens-thumbnailbucket-uqarv73svbxs`
+- API Gateway URL: `https://YOUR_API_ID.execute-api.YOUR_AWS_REGION.amazonaws.com`
+- Cognito User Pool: `YOUR_COGNITO_USER_POOL_ID`
+- Cognito Client ID: `YOUR_COGNITO_CLIENT_ID`
+- Cognito Domain: `https://YOUR_COGNITO_DOMAIN.auth.YOUR_AWS_REGION.amazoncognito.com`
+- Media S3 bucket: `YOUR_MEDIA_BUCKET`
+- Thumbnail/frame S3 bucket: `YOUR_THUMBNAIL_BUCKET`
 - DynamoDB table: `aussie-ecolens-metadata`
-- SNS topic: `arn:aws:sns:ap-southeast-2:828876761072:aussie-ecolens-tag-notifications`
-- ffmpeg Lambda layer: `arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1`
+- SNS topic: `arn:aws:sns:YOUR_AWS_REGION:YOUR_AWS_ACCOUNT_ID:YOUR_SNS_TOPIC`
+- ffmpeg Lambda layer: `arn:aws:lambda:YOUR_AWS_REGION:YOUR_AWS_ACCOUNT_ID:layer:ffmpeg:VERSION`
 - Tagger mode: `course_model`
 
 ### GCP
 
-- Project: `aussie-ecolens-raywu361`
+- Project: `YOUR_GCP_PROJECT_ID`
 - Region: `australia-southeast1`
 - Cloud Function: `aussie-ecolens-mirror`
-- Function URL: `https://aussie-ecolens-mirror-hzmou43rsa-ts.a.run.app`
-- Mirror bucket: `gs://aussie-ecolens-raywu361-mirror`
+- Function URL: `https://YOUR_MIRROR_SERVICE_URL`
+- Mirror bucket: `gs://YOUR_MIRROR_BUCKET`
 - Cloud Run model service: `aussie-ecolens-model`
-- Model service URL: `https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app`
-- Model bucket: `gs://aussie-ecolens-raywu361-models`
+- Model service URL: `https://YOUR_MODEL_SERVICE_URL`
+- Model bucket: `gs://YOUR_MODEL_BUCKET`
 - Demo stability setting: Cloud Run model service `min-instances=1`
 
 ## Local UI
@@ -119,7 +119,7 @@ alectura_lathami
 12. Query the new manual tag.
 13. Delete a media URL and show it no longer appears in query results.
 14. Upload a short video and show `frame_urls` are returned.
-15. Show GCP mirror metadata in `gs://aussie-ecolens-raywu361-mirror/media-metadata/`.
+15. Show GCP mirror metadata in `gs://YOUR_MIRROR_BUCKET/media-metadata/`.
 
 ## Verified Cloud Results
 
@@ -180,9 +180,9 @@ The video filename used for verification did not contain the species name. AWS e
 Frame objects were stored under:
 
 ```text
-s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/{checksum}/frame-0001.jpg
-s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/{checksum}/frame-0002.jpg
-s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/{checksum}/frame-0003.jpg
+s3://YOUR_THUMBNAIL_BUCKET/video-frames/{checksum}/frame-0001.jpg
+s3://YOUR_THUMBNAIL_BUCKET/video-frames/{checksum}/frame-0002.jpg
+s3://YOUR_THUMBNAIL_BUCKET/video-frames/{checksum}/frame-0003.jpg
 ```
 
 ### Multi-Cloud GCP Mirror
@@ -197,15 +197,15 @@ Verified AWS upload mirrored into GCP:
   "tags": {
     "felis_catus": 1
   },
-  "storage_url": "s3://aussie-ecolens-mediabucket-1e7c2q6ajljd/originals/7a97e0bb6c81620aa84244d4b543c815ab7930e00220ad28129a20b778f9e70b_Felis_catus_2.JPG",
-  "thumbnail_storage_url": "s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/thumbnails/7a97e0bb6c81620aa84244d4b543c815ab7930e00220ad28129a20b778f9e70b.jpg"
+  "storage_url": "s3://YOUR_MEDIA_BUCKET/originals/7a97e0bb6c81620aa84244d4b543c815ab7930e00220ad28129a20b778f9e70b_Felis_catus_2.JPG",
+  "thumbnail_storage_url": "s3://YOUR_THUMBNAIL_BUCKET/thumbnails/7a97e0bb6c81620aa84244d4b543c815ab7930e00220ad28129a20b778f9e70b.jpg"
 }
 ```
 
 GCP object:
 
 ```text
-gs://aussie-ecolens-raywu361-mirror/media-metadata/7a97e0bb6c81620aa84244d4b543c815ab7930e00220ad28129a20b778f9e70b.json
+gs://YOUR_MIRROR_BUCKET/media-metadata/7a97e0bb6c81620aa84244d4b543c815ab7930e00220ad28129a20b778f9e70b.json
 ```
 
 ### Notification Verification

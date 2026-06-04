@@ -47,7 +47,7 @@ gcloud config set project YOUR_PROJECT_ID
 Current deployed GCP project:
 
 ```text
-aussie-ecolens-raywu361
+YOUR_GCP_PROJECT_ID
 ```
 
 ## Deployment Order
@@ -57,9 +57,9 @@ Deploy GCP first so AWS can call the model service and the mirror endpoint.
 ### 1. Deploy The GCP Model Service
 
 ```bash
-export GCP_PROJECT_ID=aussie-ecolens-raywu361
+export GCP_PROJECT_ID=YOUR_GCP_PROJECT_ID
 export GCP_REGION=australia-southeast1
-export MODEL_BUCKET=aussie-ecolens-raywu361-models
+export MODEL_BUCKET=YOUR_MODEL_BUCKET
 export MODEL_SHARED_SECRET=choose-a-long-random-secret
 export MODEL_MIN_INSTANCES=1
 export CLASSIFIER_BLOB=course-model/model.pt
@@ -72,7 +72,7 @@ The script uploads the supplied model files to GCP Cloud Storage if they are not
 Current deployed GCP model endpoint:
 
 ```text
-https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app
+https://YOUR_MODEL_SERVICE_URL
 ```
 
 ### 2. Deploy The GCP Mirror Function
@@ -80,7 +80,7 @@ https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app
 ```bash
 export GCP_PROJECT_ID=YOUR_PROJECT_ID
 export GCP_REGION=australia-southeast1
-export GCP_BUCKET=aussie-ecolens-raywu361-mirror
+export GCP_BUCKET=YOUR_MIRROR_BUCKET
 export GCP_SHARED_SECRET=choose-a-long-random-secret
 scripts/deploy_gcp.sh
 ```
@@ -90,7 +90,7 @@ The script prints the GCP function URL. Use that as `GCP_MIRROR_ENDPOINT` for AW
 Current deployed GCP endpoint:
 
 ```text
-https://aussie-ecolens-mirror-hzmou43rsa-ts.a.run.app
+https://YOUR_MIRROR_SERVICE_URL
 ```
 
 ### 3. Deploy AWS
@@ -103,7 +103,7 @@ export NOTIFICATION_EMAIL=YOUR_EMAIL
 export TAGGER_MODE=course_model
 export GCP_MIRROR_ENDPOINT=THE_GCP_FUNCTION_URL
 export GCP_SHARED_SECRET=the-same-secret
-export MODEL_INFERENCE_ENDPOINT=https://aussie-ecolens-model-hzmou43rsa-ts.a.run.app
+export MODEL_INFERENCE_ENDPOINT=https://YOUR_MODEL_SERVICE_URL
 export MODEL_SHARED_SECRET=the-model-secret
 export EMAIL_NOTIFICATION_MODE=both
 export SMTP_HOST=smtp.gmail.com
@@ -111,7 +111,7 @@ export SMTP_PORT=587
 export SMTP_USERNAME=YOUR_SMTP_SENDER
 export SMTP_PASSWORD=YOUR_APP_PASSWORD
 export SMTP_FROM=YOUR_SMTP_SENDER
-export FFMPEG_LAYER_ARN=arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1
+export FFMPEG_LAYER_ARN=arn:aws:lambda:YOUR_AWS_REGION:YOUR_AWS_ACCOUNT_ID:layer:ffmpeg:VERSION
 scripts/deploy_aws.sh
 ```
 
@@ -181,15 +181,15 @@ Verified cloud result:
 media_type: video
 frame_url_count: 3
 frame_storage_urls:
-- s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/.../frame-0001.jpg
-- s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/.../frame-0002.jpg
-- s3://aussie-ecolens-thumbnailbucket-uqarv73svbxs/video-frames/.../frame-0003.jpg
+- s3://YOUR_THUMBNAIL_BUCKET/video-frames/.../frame-0001.jpg
+- s3://YOUR_THUMBNAIL_BUCKET/video-frames/.../frame-0002.jpg
+- s3://YOUR_THUMBNAIL_BUCKET/video-frames/.../frame-0003.jpg
 ```
 
 The current AWS deployment uses the public ffmpeg layer:
 
 ```text
-arn:aws:lambda:ap-southeast-2:175033217214:layer:ffmpeg:1
+arn:aws:lambda:YOUR_AWS_REGION:YOUR_AWS_ACCOUNT_ID:layer:ffmpeg:VERSION
 ```
 
 ## Final Notes

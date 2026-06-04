@@ -8,3 +8,9 @@ var/
 test_kangaroo.jpg
 .sam-home/
 tools/
+dist/
+course_models/*.pt
+course_models/*.pth
+course_models/*.onnx
+course_models/*.zip
+course_models/.source

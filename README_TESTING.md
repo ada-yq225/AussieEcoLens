@@ -215,7 +215,7 @@ Use a short demo video. There is no hard 3-second rule, but the direct API uploa
 After uploading media, run:
 
 ```bash
-tools/google-cloud-sdk/bin/gcloud storage ls gs://aussie-ecolens-raywu361-mirror/media-metadata/
+tools/google-cloud-sdk/bin/gcloud storage ls gs://YOUR_MIRROR_BUCKET/media-metadata/
 ```
 
 Expected result:
@@ -226,7 +226,7 @@ Expected result:
 To inspect one object:
 
 ```bash
-tools/google-cloud-sdk/bin/gcloud storage cat gs://aussie-ecolens-raywu361-mirror/media-metadata/OBJECT_NAME.json
+tools/google-cloud-sdk/bin/gcloud storage cat gs://YOUR_MIRROR_BUCKET/media-metadata/OBJECT_NAME.json
 ```
 
 Expected JSON fields include:
