@@ -46,6 +46,6 @@ Fill this table with real team details before submission.
 
 ## 6. Repository
 
-Private repository link: `https://github.com/ada-yq225/AussieEcoLens`
+Private repository access: shared with the teaching team separately.
 
 Keep the repository private and share it with the teaching team as required.

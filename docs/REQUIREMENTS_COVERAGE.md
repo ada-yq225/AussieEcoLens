@@ -47,7 +47,7 @@ This document maps the assignment requirements to the implemented Aussie EcoLens
 | Multi-cloud architecture diagram | `docs/ARCHITECTURE.md` gives the exact architecture and a Mermaid diagram source | Ready for report conversion with official AWS/GCP icons |
 | Team contribution table | `docs/TEAM_REPORT_OUTLINE.md` includes the required three-column table | Requires real team names, student IDs, and percentages |
 | User guide | `README.md` and `README_TESTING.md` | Ready |
-| Source code repository link | GitHub repository `ada-yq225/AussieEcoLens` | Ready; keep private and share with teaching team |
+| Source code repository access | Private repository shared with the teaching team separately | Ready; keep private and share only with teaching team |
 | Individual report | `docs/INDIVIDUAL_REPORT_TEMPLATE.md` | Requires each student's own reflection |
 
 ## Verified Final Smoke Test
@@ -71,4 +71,3 @@ The latest cloud test verified:
   }
 }
 ```
-
